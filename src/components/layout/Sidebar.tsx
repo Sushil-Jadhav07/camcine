@@ -59,7 +59,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="flex items-center justify-between h-16 px-6 lg:hidden border-b border-[var(--border-subtle)]">
             <Link to="/" className="flex items-center gap-2" onClick={onClose}>
               <span className="font-bold text-lg text-white" style={{ fontFamily: 'Sora, sans-serif' }}>
-                Cam<span className="bg-gradient-to-r from-[var(--accent)] to-[#FF6B4A] bg-clip-text text-transparent">cine</span>
+                Cam<span className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] bg-clip-text text-transparent">cine</span>
               </span>
             </Link>
             <button
@@ -119,7 +119,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {user?.avatar ? (
                     <img src={user.avatar} alt={user.name} className="w-11 h-11 rounded-xl object-cover border-2 border-[var(--accent)]/30" />
                   ) : (
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--accent)]/20 to-[#FF6B4A]/20 flex items-center justify-center border-2 border-[var(--accent)]/30">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent-hover)]/20 flex items-center justify-center border-2 border-[var(--accent)]/30">
                       <UserCircle className="w-6 h-6 text-[var(--accent)]" />
                     </div>
                   )}

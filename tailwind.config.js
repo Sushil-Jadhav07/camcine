@@ -53,7 +53,7 @@ module.exports = {
         'ott-card': '#111418',
         'ott-elevated': '#181C22',
         'ott-accent': '#E8442C',
-        'ott-accent-hover': '#FF5540',
+        'ott-accent-hover': '#FF3333',
         'ott-text': '#F0F2F5',
         'ott-muted': '#9AA3AD',
       },

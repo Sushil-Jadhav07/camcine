@@ -1,23 +1,97 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Play, Clock, Music2 } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { contentService } from '@/services';
 import { usePlayerStore } from '@/store';
-
-const CATEGORIES = ['All', 'Bollywood', 'Hollywood', 'Folk', 'Classical', 'Regional'];
+import type { Content } from '@/types';
 
 export function SongsPage() {
-  const [activeCategory, setActiveCategory] = useState('All');
   const { openPlayer } = usePlayerStore();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: songs, isLoading } = useQuery({
     queryKey: ['songs'],
     queryFn: contentService.getSongs,
   });
 
-  const featuredSong = songs?.[0];
+  const categories = [
+    { title: 'New Music', songs: songs?.slice(0, 12) },
+    { title: 'Pop', songs: songs?.slice(4, 16) },
+    { title: 'Hip Hop', songs: songs?.slice(8, 20) },
+  ];
 
+  return (
+    <div className="min-h-screen bg-[#06080A] text-white pt-6 md:pt-10 px-4 md:px-6 lg:px-16">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ fontFamily: 'Sora, sans-serif' }}>
+            Music
+          </h1>
+          <p className="text-white/40 text-[10px] md:text-sm font-bold uppercase tracking-widest mt-1">
+            Discover and stream your favorite music
+          </p>
+        </div>
+        <button className="self-start md:self-auto px-6 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-[10px] font-black uppercase tracking-widest backdrop-blur-xl">
+          My Songs
+        </button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative mb-8 md:mb-12 group">
+        <div className="absolute inset-y-0 left-5 md:left-6 flex items-center pointer-events-none">
+          <Search className="w-4 h-4 md:w-5 md:h-5 text-white/20 group-focus-within:text-[var(--accent)] transition-colors" />
+        </div>
+        <input
+          type="text"
+          placeholder="Search for songs, albums, or artists..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full h-12 md:h-14 pl-12 md:pl-14 pr-6 rounded-xl md:rounded-2xl bg-white/5 border border-white/5 focus:border-white/10 focus:bg-white/[0.07] outline-none text-white text-sm md:text-base font-bold transition-all placeholder:text-white/10 placeholder:font-black placeholder:uppercase placeholder:tracking-widest"
+        />
+      </div>
+
+      {/* Category Rows */}
+      <div className="space-y-12 md:space-y-16 pb-20">
+        {categories.map((cat, idx) => (
+          <div key={idx} className="relative group/row">
+            <div className="flex items-center justify-between mb-6 md:mb-8 px-2">
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight" style={{ fontFamily: 'Sora, sans-serif' }}>
+                {cat.title}
+              </h2>
+              <div className="flex items-center gap-2 md:opacity-0 md:group-hover/row:opacity-100 transition-opacity">
+                <button className="p-1.5 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/5 active:scale-90">
+                  <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+                <button className="p-1.5 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/5 active:scale-90">
+                  <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="scroll-row -mx-2 px-2 pb-4 no-scrollbar">
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="w-[140px] md:w-[180px] shrink-0">
+                    <div className="aspect-square skeleton rounded-xl md:rounded-2xl mb-4" />
+                    <div className="skeleton h-4 w-3/4 mb-2" />
+                    <div className="skeleton h-3 w-1/2" />
+                  </div>
+                ))
+              ) : (
+                cat.songs?.map((song) => (
+                  <SongCard key={song.id} song={song} onClick={() => openPlayer(song)} />
+                ))
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SongCard({ song, onClick }: { song: Content, onClick: () => void }) {
   const formatDuration = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -25,86 +99,41 @@ export function SongsPage() {
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="relative h-72 md:h-96 bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-surface)] to-[var(--bg-card)] overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="music-bar">
-            {[...Array(7)].map((_, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.1}s` }} />
-            ))}
-          </div>
+    <div 
+      className="w-[140px] md:w-[180px] shrink-0 group/card cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="relative aspect-square rounded-xl md:rounded-2xl overflow-hidden mb-3 md:mb-4 border border-white/5 shadow-2xl transition-all duration-500 md:group-hover/card:-translate-y-2 md:group-hover/card:border-[var(--accent)]/50 md:group-hover/card:shadow-[0_20px_40px_rgba(0,0,0,0.6)]">
+        <img 
+          src={song.poster} 
+          alt={song.title} 
+          className="w-full h-full object-cover transition-transform duration-700 md:group-hover/card:scale-110" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent md:opacity-0 md:group-hover/card:opacity-100 transition-opacity duration-500" />
+        
+        {/* Explicit Badge */}
+        <div className="absolute top-2 left-2 md:top-3 md:left-3 w-5 h-5 md:w-6 md:h-6 rounded bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 opacity-80">
+          <span className="text-[9px] md:text-[10px] font-black text-white">E</span>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-transparent to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 px-6 lg:px-16 pb-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-xl glass"><Music2 className="w-6 h-6 text-[var(--accent)]" /></div>
-            <span className="text-[var(--accent)] text-sm font-medium">Music & Songs</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white" style={{ fontFamily: 'Sora, sans-serif' }}>
-            🎵 <span className="gradient-text">Music</span> & Songs
-          </h1>
-          <p className="text-[var(--text-secondary)] mt-3 text-lg">Stream the latest tracks, albums, and curated playlists</p>
+
+        {/* Play Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 md:group-hover/card:opacity-100 transition-all duration-500 transform scale-90 md:group-hover/card:scale-100">
+           <div className="p-3 md:p-4 rounded-full bg-[var(--accent)] shadow-2xl">
+             <Play className="w-5 h-5 md:w-6 md:h-6 fill-current text-white" />
+           </div>
         </div>
       </div>
 
-      <div className="py-10 px-6 lg:px-16">
-        <div className="flex gap-3 overflow-x-auto pb-6 scroll-row">
-          {CATEGORIES.map((cat, idx) => (
-            <button key={cat} onClick={() => setActiveCategory(cat)} className={`genre-tag whitespace-nowrap ${idx === 0 ? 'active' : ''}`}>
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {featuredSong && (
-          <div className="mb-14">
-            <Link to={`/content/${featuredSong.id}`} className="group relative block w-full aspect-[21/9] rounded-3xl overflow-hidden">
-              <img src={featuredSong.backdrop || featuredSong.poster} alt={featuredSong.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-black/20" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <button onClick={(e) => { e.preventDefault(); openPlayer(featuredSong); }} className="p-5 rounded-full bg-[var(--accent)]/90 backdrop-blur-xl hover:bg-[var(--accent)] hover:scale-110 transition-all shadow-lg shadow-[var(--accent)]/30">
-                  <Play className="w-10 h-10 fill-current" />
-                </button>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                <span className="inline-block px-3 py-1 glass-accent rounded-full text-[var(--accent)] text-xs font-semibold mb-3">Featured Track</span>
-                <h3 className="text-2xl lg:text-4xl font-bold text-white" style={{ fontFamily: 'Sora, sans-serif' }}>{featuredSong.title}</h3>
-                <p className="text-white/70 mt-2 text-lg">{featuredSong.genres?.[0] || 'Artist'}</p>
-              </div>
-            </Link>
-          </div>
-        )}
-
-        <div>
-          <h2 className="section-title mb-8">All Songs</h2>
-          {isLoading ? (
-            <div className="space-y-3">{Array.from({ length: 8 }).map((_, i) => (<div key={i} className="flex items-center gap-4 p-4"><div className="skeleton w-16 h-16 rounded-xl" /><div className="flex-1"><div className="skeleton h-4 w-48 mb-2" /><div className="skeleton h-3 w-32" /></div></div>))}</div>
-          ) : (
-            <div className="space-y-2">
-              {songs?.map((song, index) => (
-                <div key={song.id} className={`group flex items-center gap-5 p-4 rounded-2xl transition-all duration-300 cursor-pointer ${index % 2 === 0 ? 'bg-[var(--bg-card)]/50 hover:bg-[var(--bg-elevated)]' : 'bg-[var(--bg-surface)]/50 hover:bg-[var(--bg-elevated)]'}`}>
-                  <span className="w-8 text-center text-[var(--text-muted)] font-medium">{index + 1}</span>
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                    <img src={song.poster} alt={song.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Play className="w-6 h-6 fill-current text-white" />
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0" onClick={() => openPlayer(song)}>
-                    <h4 className="text-white font-semibold text-base truncate group-hover:text-[var(--accent)] transition-colors">{song.title}</h4>
-                    <p className="text-[var(--text-muted)] text-sm truncate">{song.genres?.[0] || 'Unknown Artist'}</p>
-                  </div>
-                  <div className="flex items-center gap-5">
-                    <span className="text-[var(--text-muted)] text-sm flex items-center gap-1.5"><Clock className="w-4 h-4" />{song.duration ? formatDuration(song.duration) : '3:45'}</span>
-                    <button onClick={(e) => { e.stopPropagation(); openPlayer(song); }} className="p-3 rounded-full bg-[var(--accent)] opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all shadow-lg">
-                      <Play className="w-5 h-5 fill-current" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="px-1">
+        <h4 className="text-xs md:text-sm font-black text-white truncate md:group-hover/card:text-[var(--accent)] transition-colors leading-tight">
+          {song.title}
+        </h4>
+        <p className="text-[9px] md:text-[10px] text-white/40 font-black uppercase tracking-widest mt-1 md:mt-1.5 truncate">
+          {song.genres?.[0] || 'Unknown Artist'}
+        </p>
+        <p className="text-[9px] md:text-[10px] text-white/20 font-black mt-0.5 md:mt-1">
+          {song.duration ? formatDuration(song.duration) : '3:45'}
+        </p>
       </div>
     </div>
   );

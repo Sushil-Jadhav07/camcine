@@ -59,7 +59,7 @@ function transformMovie(movie: any): any {
       id: `cast-${c.id}`,
       name: c.name,
       character: c.character,
-      photo: tmdbImage.profile(c.profile_path),
+      avatar: tmdbImage.profile(c.profile_path),
     })) || [],
     crew: movie.credits?.crew?.filter((c: any) => c.job === 'Director').slice(0, 2).map((c: any) => ({
       id: `crew-${c.id}`,
@@ -97,17 +97,35 @@ function transformSeries(show: any): any {
     languages: show.original_language ? [show.original_language.toUpperCase()] : ['EN'],
     region: 'Hollywood',
     mood: [],
-    cast: [],
-    crew: [],
-    tags: [],
+    cast: show.credits?.cast?.slice(0, 6).map((c: any) => ({
+      id: `cast-${c.id}`,
+      name: c.name,
+      character: c.character,
+      avatar: tmdbImage.profile(c.profile_path),
+    })) || [],
+    crew: show.credits?.crew?.filter((c: any) => c.job === 'Director' || c.job === 'Executive Producer').slice(0, 2).map((c: any) => ({
+      id: `crew-${c.id}`,
+      name: c.name,
+      role: c.job,
+    })) || [],
+    tags: show.keywords?.results?.slice(0, 5).map((k: any) => k.name) || [],
     isTrending: show.popularity > 100,
     isFeatured: show.vote_average > 7.5,
     viewCount: Math.round(show.popularity * 1000),
     likes: Math.round(show.vote_count * 10),
-    seasons: show.number_of_seasons,
-    episodes: show.number_of_episodes,
+    seasons: show.seasons?.map((s: any) => ({
+      id: s.id,
+      number: s.season_number,
+      title: s.name,
+      episodeCount: s.episode_count,
+      poster: tmdbImage.poster(s.poster_path),
+      episodes: [], // Will be filled by getSeasonDetails if needed
+    })) || [],
+    totalEpisodes: show.number_of_episodes,
     videoUrl: '',
-    trailer: '',
+    trailer: show.videos?.results?.find((v: any) => v.type === 'Trailer')?.key
+      ? `https://www.youtube.com/watch?v=${show.videos.results.find((v: any) => v.type === 'Trailer').key}`
+      : '',
   };
 }
 
@@ -183,20 +201,56 @@ export const tmdbService = {
       .map((r: any) => r.media_type === 'movie' ? transformMovie(r) : transformSeries(r));
   },
 
-  // Get single movie details with credits + videos (replaces getContentById for movies)
+  // Get single movie details with credits + videos
   async getMovieDetails(tmdbId: number): Promise<any> {
     const data = await tmdbFetch(`/movie/${tmdbId}`, {
-      append_to_response: 'credits,videos,keywords,similar',
+      append_to_response: 'credits,videos,keywords',
     });
     return transformMovie(data);
+  },
+
+  // Get similar movies
+  async getSimilarMovies(tmdbId: number): Promise<any[]> {
+    const data = await tmdbFetch(`/movie/${tmdbId}/similar`);
+    return data.results.slice(0, 8).map(transformMovie);
   },
 
   // Get single TV show details
   async getSeriesDetails(tmdbId: number): Promise<any> {
     const data = await tmdbFetch(`/tv/${tmdbId}`, {
-      append_to_response: 'credits,videos,keywords,similar',
+      append_to_response: 'credits,videos,keywords',
     });
-    return transformSeries(data);
+    const show = transformSeries(data);
+    
+    // Auto-fetch episodes for first season (usually 1, but TMDB sometimes has 0 for specials)
+    const firstSeasonNum = data.seasons?.find((s: any) => s.season_number > 0)?.season_number || 0;
+    if (show.seasons.length > 0) {
+      const seasonData = await this.getSeasonDetails(tmdbId, firstSeasonNum);
+      show.seasons[show.seasons.findIndex((s: any) => s.number === firstSeasonNum)].episodes = seasonData;
+    }
+    
+    return show;
+  },
+
+  // Get episodes for a specific season
+  async getSeasonDetails(tmdbId: number, seasonNumber: number): Promise<any[]> {
+    const data = await tmdbFetch(`/tv/${tmdbId}/season/${seasonNumber}`);
+    return data.episodes.map((ep: any) => ({
+      id: `episode-${ep.id}`,
+      tmdbId: ep.id,
+      number: ep.episode_number,
+      title: ep.name,
+      description: ep.overview,
+      thumbnail: tmdbImage.backdrop(ep.still_path, 'w780'),
+      duration: ep.runtime ? ep.runtime * 60 : 3000,
+      airDate: ep.air_date || '',
+    }));
+  },
+
+  // Get similar TV shows
+  async getSimilarSeries(tmdbId: number): Promise<any[]> {
+    const data = await tmdbFetch(`/tv/${tmdbId}/similar`);
+    return data.results.slice(0, 8).map(transformSeries);
   },
 
   // Get movies by genre (for Browse page filter)

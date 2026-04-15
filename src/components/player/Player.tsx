@@ -43,8 +43,8 @@ export function Player() {
 
   return (
     <div className="player-bar">
-      <div className="flex items-center gap-4 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3 w-56 flex-shrink-0">
+      <div className="mx-auto flex max-w-7xl flex-col items-stretch gap-4 md:flex-row md:items-center">
+        <div className="flex w-full min-w-0 flex-shrink-0 items-center gap-3 md:w-56">
           <img
             src={currentContent.poster}
             alt={currentContent.title}
@@ -61,14 +61,14 @@ export function Player() {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center gap-2">
-          <div className="flex items-center gap-4">
+        <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+          <div className="flex items-center gap-3 md:gap-4">
             <button onClick={playPrevious} className="p-2 text-[var(--text-secondary)] hover:text-white transition-all hover:bg-white/5 rounded-full">
               <SkipBack className="w-5 h-5" />
             </button>
             <button
               onClick={isPlaying ? pause : play}
-              className="p-3 rounded-full bg-gradient-to-r from-[var(--accent)] to-[#FF6B4A] text-white hover:shadow-lg hover:shadow-[var(--accent)]/30 transition-all hover:scale-105 active:scale-95"
+              className="p-3 rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white hover:shadow-lg hover:shadow-[var(--accent)]/30 transition-all hover:scale-105 active:scale-95"
             >
               {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />}
             </button>
@@ -77,7 +77,7 @@ export function Player() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3 w-full max-w-xl">
+          <div className="flex w-full max-w-xl items-center gap-2 md:gap-3">
             <span className="text-[var(--text-muted)] text-xs w-10 text-right font-medium">{formatTime(currentTime)}</span>
             <div ref={progressRef} className="progress-bar flex-1" onClick={handleProgressClick}>
               <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
@@ -86,7 +86,7 @@ export function Player() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-48 justify-end flex-shrink-0">
+        <div className="flex w-full flex-shrink-0 items-center justify-between gap-3 md:w-48 md:justify-end">
           <button onClick={toggleMute} className="p-2 text-[var(--text-secondary)] hover:text-white transition-all hover:bg-white/5 rounded-full">
             {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
           </button>

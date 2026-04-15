@@ -1,28 +1,19 @@
-// src/sections/HomePage.tsx  — TMDB-powered version
-// Replace mock contentService calls with tmdbService calls
-
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Play, Info, Star, Clock, ChevronRight } from 'lucide-react';
+import { Play, Star, Plus, ChevronDown, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { tmdbService } from '@/services/tmdbService';
 import { ContentCard } from '@/components/cards/ContentCard';
-import { usePlayerStore } from '@/store';
-import type { Content } from '@/types';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const GENRES = ['All', 'Action', 'Drama', 'Thriller', 'Comedy', 'Horror', 'Sci-Fi', 'Romance', 'Animation', 'Documentary'];
-
 export function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
+  const topTenRef = useRef<HTMLDivElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [activeGenre, setActiveGenre] = useState('All');
-  const { openPlayer } = usePlayerStore();
 
-  // ── TMDB queries ────────────────────────────────────────
   const { data: trending = [] } = useQuery({
     queryKey: ['tmdb-trending'],
     queryFn: tmdbService.getTrending,
@@ -32,12 +23,6 @@ export function HomePage() {
   const { data: popularMovies = [] } = useQuery({
     queryKey: ['tmdb-popular-movies'],
     queryFn: tmdbService.getPopularMovies,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: popularSeries = [] } = useQuery({
-    queryKey: ['tmdb-popular-series'],
-    queryFn: tmdbService.getPopularSeries,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -53,51 +38,41 @@ export function HomePage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // ── Hero content (cycles through featured) ───────────────
-  const heroSlides = featured.length > 0 ? featured : trending.slice(0, 3);
-  const heroContent: Content = (heroSlides[currentSlide] ?? {
-    id: 'default-1',
-    title: 'Welcome to Camcine',
-    description: 'Stream the best movies, shows, live news and songs. Your premium entertainment destination.',
-    type: 'movie', status: 'free',
-    poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&h=750&fit=crop',
-    backdrop: 'https://images.unsplash.com/photo-1514306191717-45224512c2d0?w=1920&h=1080&fit=crop',
-    releaseYear: 2026, genres: ['Drama'], rating: 'U/A', duration: 7200,
-    languages: ['EN'], region: 'Hollywood', mood: [], cast: [], crew: [], tags: [],
-    isTrending: true, isFeatured: true, viewCount: 0, likes: 0,
-  }) as Content;
+  const { data: popularSeries = [] } = useQuery({
+    queryKey: ['tmdb-popular-series'],
+    queryFn: tmdbService.getPopularSeries,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const miniPreviews = heroSlides.filter((_, i) => i !== currentSlide).slice(0, 3);
+  const heroSlides = featured.length > 0 ? featured : trending.slice(0, 5);
+  const heroContent = heroSlides[currentSlide];
+  const featuredRow = (featured.length > 0 ? [...featured, ...popularMovies] : popularMovies).slice(0, 8);
+  const spotlightContent = featured[1] || popularMovies[0] || trending[0];
 
-  // ── GSAP ──────────────────────────────────────────────────
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline();
-      tl.fromTo('.hero-backdrop', { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 1.4, ease: 'power3.out' })
-        .fromTo('.hero-glow', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }, '-=0.8')
-        .fromTo('.hero-content', { x: '-6vw', opacity: 0 }, { x: 0, opacity: 1, duration: 1, ease: 'power3.out' }, '-=0.4')
-        .fromTo('.hero-right', { x: '6vw', opacity: 0 }, { x: 0, opacity: 1, duration: 1, ease: 'power3.out' }, '-=0.6')
-        .fromTo('.hero-cta', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.12, ease: 'power2.out' }, '-=0.3')
-        .fromTo('.hero-title', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }, '-=0.5');
+      gsap.fromTo('.hero-bg', { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out' });
+      gsap.fromTo('.hero-text', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out', delay: 0.3 });
+      gsap.fromTo('.hero-actions', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', delay: 0.6 });
 
       gsap.utils.toArray('.section-content').forEach((section: any) => {
-        gsap.fromTo(section, { opacity: 0, y: 40 }, {
-          opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
-          scrollTrigger: { trigger: section, start: 'top 88%', once: true }
-        });
-      });
-
-      gsap.utils.toArray('.row-card').forEach((card: any, i: number) => {
-        gsap.fromTo(card, { opacity: 0, y: 25, scale: 0.95 }, {
-          opacity: 1, y: 0, scale: 1, duration: 0.5, delay: i * 0.05, ease: 'power2.out',
-          scrollTrigger: { trigger: card, start: 'top 92%', once: true }
-        });
+        gsap.fromTo(
+          section,
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: { trigger: section, start: 'top 88%', once: true },
+          }
+        );
       });
     }, heroRef);
+
     return () => ctx.revert();
   }, []);
 
-  // Auto-advance hero slider
   useEffect(() => {
     if (heroSlides.length < 2) return;
     const interval = setInterval(() => {
@@ -106,261 +81,376 @@ export function HomePage() {
     return () => clearInterval(interval);
   }, [heroSlides.length]);
 
-  const formatDuration = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  const goToPrevSlide = () => {
+    if (heroSlides.length < 2) return;
+    setCurrentSlide((prev) => (prev - 1 + Math.min(heroSlides.length, 5)) % Math.min(heroSlides.length, 5));
   };
 
-  // ── Render ─────────────────────────────────────────────────
+  const goToNextSlide = () => {
+    if (heroSlides.length < 2) return;
+    setCurrentSlide((prev) => (prev + 1) % Math.min(heroSlides.length, 5));
+  };
+
+  const scrollTopTen = (direction: 'left' | 'right') => {
+    if (!topTenRef.current) return;
+    const amount = window.innerWidth >= 1024 ? 520 : 320;
+    topTenRef.current.scrollBy({
+      left: direction === 'right' ? amount : -amount,
+      behavior: 'smooth',
+    });
+  };
+
   return (
-    <div className="relative" ref={heroRef}>
-
-      {/* ── HERO ── */}
-      <section className="hero-section">
-        <div className="hero-backdrop" style={{ backgroundImage: `url(${heroContent.backdrop})` }} />
-        <div className="hero-gradient" />
-        <div className="hero-glow" />
-
-        <div className="relative z-10 w-full px-6 lg:px-16 flex items-center min-h-[92vh]">
-          <div className="hero-content w-full lg:w-[58%]">
-            <div className="mb-5">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 glass-accent rounded-full text-[var(--accent)] text-sm font-semibold">
-                <span className="text-base">🔥</span> Trending Now
-              </span>
+    <div className="relative -mt-16 md:-mt-20" ref={heroRef}>
+      <section className="relative w-full h-[calc(65vh+4rem)] sm:h-[calc(72vh+4rem)] md:h-[calc(80vh+5rem)] overflow-hidden">
+        {heroContent ? (
+          <>
+            <div className="hero-bg absolute inset-0 z-0">
+              <img
+                src={heroContent.backdrop}
+                alt={heroContent.title}
+                className="w-full h-full object-cover brightness-[0.35]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-[var(--bg-base)]/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-base)]/90 via-[var(--bg-base)]/30 to-transparent" />
             </div>
 
-            <h1 className="hero-title text-4xl md:text-5xl lg:text-[56px] font-bold text-white mb-5 leading-tight" style={{ fontFamily: 'Sora, sans-serif' }}>
-              {heroContent.title}
-            </h1>
+            <div className="hero-text absolute inset-x-0 bottom-0 z-10 px-5 pb-8 pt-24 sm:px-8 md:px-12 lg:px-20 md:pb-10">
+              <div className="max-w-3xl">
+                <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-[var(--accent)] font-bold text-xs md:text-sm">
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    {heroContent.tmdbRating}
+                  </div>
+                  <span className="text-white/50 text-xs font-bold uppercase tracking-widest">{heroContent.releaseYear}</span>
+                  <span className="px-2 py-0.5 rounded bg-[var(--accent)] text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest">Premium</span>
+                  {heroContent.genres?.slice(0, 2).map((g: string) => (
+                    <span key={g} className="text-white/40 text-[10px] font-bold uppercase tracking-widest hidden sm:inline">{g}</span>
+                  ))}
+                </div>
 
-            <p className="text-[var(--text-secondary)] text-base lg:text-lg mb-7 max-w-xl line-clamp-3 leading-relaxed">
-              {heroContent.description}
-            </p>
-
-            <div className="flex items-center gap-5 mb-8 text-sm">
-              <div className="rating-badge">
-                <Star className="w-3.5 h-3.5 fill-current" />
-                {(heroContent as any).tmdbRating || heroContent.rating || '8.5'}
-              </div>
-              <span className="text-[var(--text-muted)]">{heroContent.releaseYear}</span>
-              <span className="px-2 py-0.5 glass rounded text-xs text-[var(--text-secondary)]">
-                {heroContent.genres?.[0] || 'Drama'}
-              </span>
-              {heroContent.duration != null && heroContent.duration > 0 && (
-                <span className="flex items-center gap-1.5 text-[var(--text-muted)]">
-                  <Clock className="w-3.5 h-3.5" />
-                  {formatDuration(heroContent.duration)}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-4 hero-cta">
-              <button onClick={() => openPlayer(heroContent)} className="btn-accent group">
-                <Play className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" />
-                Watch Now
-              </button>
-              <Link to={`/content/${heroContent.id}`} className="btn-ghost">
-                <Info className="w-5 h-5" />
-                More Info
-              </Link>
-            </div>
-          </div>
-
-          {/* Mini previews */}
-          <div className="hidden lg:block w-[42%] pl-16">
-            <div className="hero-right flex flex-col gap-4">
-              {miniPreviews.map((content, idx) => (
-                <Link
-                  key={content.id}
-                  to={`/content/${content.id}`}
-                  className="group relative flex items-center gap-4 p-3 rounded-2xl glass hover-lift transition-all duration-300"
+                <h1
+                  className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white uppercase mb-3 md:mb-5 leading-[0.92] tracking-tighter italic"
+                  style={{ fontFamily: 'Sora, sans-serif' }}
                 >
-                  <img
-                    src={content.poster}
-                    alt={content.title}
-                    className="w-16 h-24 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-white font-semibold text-sm truncate group-hover:text-[var(--accent)] transition-colors">
-                      {content.title}
-                    </h4>
-                    <p className="text-[var(--text-muted)] text-xs mt-1">{content.releaseYear}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="rating-badge text-[10px] py-0.5 px-2">
-                        <Star className="w-2.5 h-2.5 fill-current" />
-                        {(content as any).tmdbRating || '8.0'}
-                      </span>
+                  {heroContent.title}
+                </h1>
+
+                <p className="text-white/55 text-xs sm:text-sm md:text-base mb-5 md:mb-7 line-clamp-2 md:line-clamp-3 max-w-xl font-medium leading-relaxed">
+                  {heroContent.description}
+                </p>
+
+                <div className="hero-actions flex items-center gap-3 md:gap-4 flex-wrap">
+                  <Link
+                    to={`/content/${heroContent.id}`}
+                    className="flex items-center gap-2 md:gap-3 px-6 md:px-10 py-3 md:py-4 rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-black text-xs md:text-sm uppercase tracking-widest transition-all shadow-[0_0_30px_rgba(232,68,44,0.3)] active:scale-95"
+                  >
+                    <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" /> Play Now
+                  </Link>
+                  <Link
+                    to={`/content/${heroContent.id}`}
+                    className="hidden sm:flex items-center gap-2 md:gap-3 px-5 md:px-7 py-3 md:py-4 rounded-full bg-white/10 hover:bg-white/15 border border-white/10 text-white font-black text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 backdrop-blur-md"
+                  >
+                    More Info
+                  </Link>
+                  <button className="p-3 md:p-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white active:scale-90 hidden md:flex">
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {heroSlides.length > 1 && (
+                <div className="mt-8 flex flex-col gap-4 lg:absolute lg:right-8 lg:bottom-8 lg:mt-0 lg:w-[520px]">
+                  <div className="hidden lg:flex items-center justify-end gap-2">
+                    <button
+                      onClick={goToPrevSlide}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/25 text-white/60 backdrop-blur-xl transition hover:text-white hover:border-[var(--accent)]/40"
+                      aria-label="Previous slide"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={goToNextSlide}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/25 text-white/60 backdrop-blur-xl transition hover:text-white hover:border-[var(--accent)]/40"
+                      aria-label="Next slide"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-white/10 bg-black/20 p-3 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                      {heroSlides.slice(0, 5).map((slide, i) => (
+                        <button
+                          key={slide.id}
+                          onClick={() => setCurrentSlide(i)}
+                          className={`group relative h-14 w-24 sm:h-16 sm:w-28 md:w-32 shrink-0 overflow-hidden rounded-xl border transition-all duration-300 ${
+                            i === currentSlide
+                              ? 'border-[var(--accent)] shadow-[0_0_0_1px_var(--accent)]'
+                              : 'border-white/10 opacity-70 hover:opacity-100'
+                          }`}
+                          aria-label={`Go to slide ${i + 1}`}
+                        >
+                          <img src={slide.backdrop} alt={slide.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <div className={`absolute inset-0 transition-colors ${i === currentSlide ? 'bg-[var(--accent)]/10' : 'bg-black/30 group-hover:bg-black/15'}`} />
+                          {i === currentSlide && (
+                            <div className="absolute inset-y-2 right-2 w-1 rounded-full bg-white/80" />
+                          )}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => { e.preventDefault(); openPlayer(content as Content); }}
-                    className="p-2.5 rounded-full bg-[var(--accent)] opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300"
-                  >
-                    <Play className="w-4 h-4 fill-current" />
-                  </button>
-                </Link>
-              ))}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="absolute inset-0 skeleton" />
+        )}
+      </section>
+
+      
+
+      <section className="section-content py-8 md:py-14 px-4 md:px-6 lg:px-16 overflow-hidden">
+        <div className="mb-8 flex items-start justify-between gap-4 md:mb-12">
+          <div className="flex items-start gap-3 md:gap-5">
+            <h2
+              className="text-5xl sm:text-6xl md:text-8xl lg:text-[7rem] font-black tracking-tighter uppercase italic leading-none text-transparent [text-shadow:0_0_30px_rgba(232,68,44,0.08)] [-webkit-text-stroke:1.5px_var(--accent)]"
+              style={{ fontFamily: 'Sora, sans-serif' }}
+            >
+              TOP 10
+            </h2>
+            <div className="flex flex-col pt-2 md:pt-4 leading-none">
+              <span className="text-white text-xs md:text-lg font-black tracking-[0.32em] uppercase">Movies</span>
+              <span className="text-white text-xs md:text-lg font-black tracking-[0.32em] uppercase opacity-70 mt-2 md:mt-3">Today</span>
             </div>
           </div>
-        </div>
 
-        {/* Slide dots */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3">
-          {heroSlides.slice(0, 5).map((_, idx) => (
+          <div className="hidden md:flex items-center gap-2 pt-2">
             <button
-              key={idx}
-              onClick={() => setCurrentSlide(idx)}
-              className={`h-1.5 rounded-full transition-all duration-500 ${currentSlide === idx ? 'w-8 bg-[var(--accent)]' : 'w-2 bg-white/30 hover:bg-white/50'}`}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* ── GENRE TABS ── */}
-      <section className="section-content py-10 px-6 lg:px-16">
-        <div className="scroll-row">
-          {GENRES.map((genre) => (
-            <button
-              key={genre}
-              onClick={() => setActiveGenre(genre)}
-              className={`genre-tag ${activeGenre === genre ? 'active' : ''}`}
+              onClick={() => scrollTopTen('left')}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/55 transition hover:border-[var(--accent)]/40 hover:text-white"
+              aria-label="Scroll top ten left"
             >
-              {genre}
+              <ChevronLeft className="h-4 w-4" />
             </button>
+            <button
+              onClick={() => scrollTopTen('right')}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/55 transition hover:border-[var(--accent)]/40 hover:text-white"
+              aria-label="Scroll top ten right"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        <div ref={topTenRef} className="scroll-row items-end gap-5 md:gap-8 pb-10 -mx-4 px-4 no-scrollbar">
+          {(trending.length > 0 ? trending.slice(0, 10) : Array.from({ length: 10 })).map((content: any, idx) => (
+            <div
+              key={content?.id || idx}
+              className="relative flex-shrink-0 group basis-[62%] sm:basis-[36%] md:basis-[28%] lg:basis-[20%] xl:basis-[18%] max-w-[240px] min-w-0 pt-6"
+            >
+              <div className="absolute left-0 bottom-0 z-0 select-none pointer-events-none">
+                <span
+                  className="block text-[118px] sm:text-[132px] md:text-[148px] lg:text-[168px] font-black leading-[0.82] italic text-transparent [-webkit-text-stroke:1.5px_var(--accent)] group-hover:text-[var(--accent)]/20 transition-all duration-500"
+                  style={{ fontFamily: 'Sora, sans-serif' }}
+                >
+                  {idx + 1}
+                </span>
+              </div>
+              <div className="relative z-10 w-[132px] sm:w-[150px] md:w-[162px] lg:w-[170px] ml-[3.35rem] sm:ml-[4.25rem] md:ml-[4.75rem] transition-all duration-500">
+                {content ? (
+                  <div className="relative">
+                    {content.tmdbRating && (
+                      <div className="absolute -top-4 left-3 z-20 inline-flex items-center gap-1 rounded-full border border-[var(--accent)] bg-[var(--bg-base)]/95 px-2.5 py-1 text-[10px] font-black text-white shadow-[0_10px_24px_rgba(0,0,0,0.38)] backdrop-blur-md">
+                        <Star className="h-3 w-3 fill-[var(--accent)] text-[var(--accent)]" />
+                        {content.tmdbRating}
+                      </div>
+                    )}
+                    <ContentCard
+                      content={content}
+                      className="rounded-[1.35rem] md:rounded-[1.6rem] hover:translate-y-0 md:hover:translate-y-0 hover:shadow-none hover:border-white/5"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-[2/3] skeleton rounded-[1.35rem] md:rounded-[1.6rem]" />
+                )}
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* ── TRENDING ── */}
-      <section className="section-content py-12 px-6 lg:px-16">
-        <div className="flex items-center justify-between mb-8">
+            <section className="section-content py-6 md:py-10 px-4 md:px-6 lg:px-16">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
           <h2 className="section-title">Trending Now</h2>
-          <Link to="/browse?sort=trending" className="text-[var(--text-secondary)] hover:text-white text-sm flex items-center gap-1.5 transition-colors group">
-            View All <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <Link to="/browse?sort=trending" className="text-[var(--text-secondary)] hover:text-white text-xs flex items-center gap-1 transition-colors group font-bold uppercase tracking-widest">
+            All <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>
-        <div className="scroll-row">
+        <div className="scroll-row no-scrollbar">
           {trending.length === 0
             ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="w-[160px] md:w-[180px] aspect-[2/3] skeleton rounded-2xl flex-shrink-0" />
+                <div key={i} className="w-[130px] sm:w-[155px] md:w-[175px] aspect-[2/3] skeleton rounded-2xl flex-shrink-0" />
               ))
-            : trending.map((content, idx) => (
-                <div key={content.id} className="row-card w-[160px] md:w-[180px]">
+            : trending.map((content) => (
+                <div key={content.id} className="w-[130px] sm:w-[155px] md:w-[175px] flex-shrink-0">
                   <ContentCard content={content} />
                 </div>
-              ))
-          }
+              ))}
         </div>
       </section>
 
-      {/* ── FEATURED / EDITOR'S CHOICE ── */}
-      {featured[0] && (
-        <section className="section-content py-12 px-6 lg:px-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="section-title">Editor's Choice</h2>
-            <Link to="/browse?sort=featured" className="text-[var(--text-secondary)] hover:text-white text-sm flex items-center gap-1.5 transition-colors group">
-              View All <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+      <section className="section-content py-8 md:py-14 px-4 md:px-6 lg:px-16 overflow-hidden">
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between mb-8 md:mb-10">
+          <div>
+            <h2
+              className="text-5xl sm:text-6xl md:text-8xl lg:text-[7rem] font-black text-outline-accent tracking-tighter uppercase leading-none"
+              style={{ fontFamily: 'Sora, sans-serif' }}
+            >
+              FEATURED
+            </h2>
+            <p className="mt-4 text-white text-xs md:text-lg font-black tracking-[0.32em] uppercase">Movies</p>
           </div>
-          <Link to={`/content/${featured[0].id}`} className="group relative block w-full aspect-[21/9] rounded-2xl overflow-hidden">
+
+          <button className="self-start md:self-center inline-flex items-center gap-3 rounded-full border border-[var(--accent)] bg-white/[0.02] px-5 py-3 text-sm font-semibold text-white backdrop-blur-xl">
+            Featured
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="scroll-row gap-4 md:gap-5 pb-4 no-scrollbar">
+          {featuredRow.length === 0
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="w-[160px] sm:w-[190px] md:w-[220px] aspect-[0.7] skeleton rounded-[1.75rem] flex-shrink-0" />
+              ))
+            : featuredRow.map((content) => (
+                <div key={content.id} className="w-[160px] sm:w-[190px] md:w-[220px] flex-shrink-0">
+                  <ContentCard content={content} className="rounded-[1.5rem] md:rounded-[1.75rem]" />
+                </div>
+              ))}
+        </div>
+      </section>
+
+
+
+      <section className="section-content py-6 md:py-10 px-4 md:px-6 lg:px-16">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <h2 className="section-title">Popular Movies</h2>
+          <Link to="/browse?type=movie" className="text-[var(--text-secondary)] hover:text-white text-xs flex items-center gap-1 transition-colors group font-bold uppercase tracking-widest">
+            All <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+        </div>
+        <div className="scroll-row no-scrollbar">
+          {popularMovies.length === 0
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="w-[130px] sm:w-[155px] md:w-[175px] aspect-[2/3] skeleton rounded-2xl flex-shrink-0" />
+              ))
+            : popularMovies.map((content) => (
+                <div key={content.id} className="w-[130px] sm:w-[155px] md:w-[175px] flex-shrink-0">
+                  <ContentCard content={content} />
+                </div>
+              ))}
+        </div>
+      </section>
+
+      <section className="section-content py-6 md:py-10 px-4 md:px-6 lg:px-16">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <h2 className="section-title">Now Playing</h2>
+          <Link to="/browse?sort=now_playing" className="text-[var(--text-secondary)] hover:text-white text-xs flex items-center gap-1 transition-colors group font-bold uppercase tracking-widest">
+            All <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+        </div>
+        <div className="scroll-row no-scrollbar">
+          {nowPlaying.length === 0
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="w-[130px] sm:w-[155px] md:w-[175px] aspect-[2/3] skeleton rounded-2xl flex-shrink-0" />
+              ))
+            : nowPlaying.map((content) => (
+                <div key={content.id} className="w-[130px] sm:w-[155px] md:w-[175px] flex-shrink-0">
+                  <ContentCard content={content} />
+                </div>
+              ))}
+        </div>
+      </section>
+
+
+      <section className="section-content py-6 md:py-10 px-4 md:px-6 lg:px-16">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <h2 className="section-title">TV Series</h2>
+          <Link to="/browse?type=series" className="text-[var(--text-secondary)] hover:text-white text-xs flex items-center gap-1 transition-colors group font-bold uppercase tracking-widest">
+            All <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+        </div>
+        <div className="scroll-row no-scrollbar">
+          {popularSeries.length === 0
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="w-[130px] sm:w-[155px] md:w-[175px] aspect-[2/3] skeleton rounded-2xl flex-shrink-0" />
+              ))
+            : popularSeries.map((content) => (
+                <div key={content.id} className="w-[130px] sm:w-[155px] md:w-[175px] flex-shrink-0">
+                  <ContentCard content={content} />
+                </div>
+              ))}
+        </div>
+      </section>
+
+            {spotlightContent && (
+        <section className="section-content px-4 pb-12 md:px-6 md:pb-16 lg:px-16">
+          <Link
+            to={`/content/${spotlightContent.id}`}
+            className="group relative block min-h-[320px] md:min-h-[460px] overflow-hidden rounded-[2rem] md:rounded-[2.75rem] bg-[#0D1014]"
+          >
             <img
-              src={featured[0].backdrop}
-              alt={featured[0].title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              src={spotlightContent.backdrop}
+              alt={spotlightContent.title}
+              className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-base)] via-[rgba(6,8,10,0.7)] to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
-              <span className="inline-block px-3 py-1 glass-accent rounded-full text-[var(--accent)] text-xs font-semibold mb-3">Editor's Pick</span>
-              <h3 className="text-2xl lg:text-4xl font-bold text-white mb-3" style={{ fontFamily: 'Sora, sans-serif' }}>
-                {featured[0].title}
-              </h3>
-              <p className="text-white/70 text-sm lg:text-base max-w-xl line-clamp-2">{featured[0].description}</p>
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,8,10,0.78)_0%,rgba(6,8,10,0.52)_38%,rgba(6,8,10,0.82)_100%)]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)]/60 via-transparent to-[var(--bg-base)]/20" />
+
+            <div className="relative z-10 flex min-h-[320px] md:min-h-[460px] items-center justify-end p-6 sm:p-8 md:p-12 lg:p-16">
+              <div className="max-w-xl text-left md:text-right">
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-white/80">
+                  Spotlight Pick
+                </div>
+
+                <h3
+                  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase text-white leading-[0.9] tracking-tight mb-4"
+                  style={{ fontFamily: 'Sora, sans-serif' }}
+                >
+                  {spotlightContent.title}
+                </h3>
+
+                <p className="max-w-lg md:ml-auto text-sm md:text-base leading-relaxed text-white/75 mb-8 line-clamp-3">
+                  {spotlightContent.description}
+                </p>
+
+                <div className="flex flex-wrap items-center gap-3 md:justify-end">
+                  <span className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.24em] text-white/55">
+                    <Star className="w-4 h-4 fill-[var(--accent)] text-[var(--accent)]" />
+                    {spotlightContent.tmdbRating}
+                  </span>
+                  <span className="text-xs font-black uppercase tracking-[0.24em] text-white/40">
+                    {spotlightContent.releaseYear}
+                  </span>
+                </div>
+
+                <div className="mt-8 flex flex-wrap gap-3 md:justify-end">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-[var(--accent)] bg-[var(--bg-base)]/45 px-6 py-3 text-sm font-black text-white shadow-[0_0_30px_rgba(232,68,44,0.18)]">
+                    <Play className="w-4 h-4 fill-current" />
+                    Watch Now
+                  </span>
+                  <span className="hidden sm:inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white/70">
+                    Explore
+                    <ArrowUpRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </div>
             </div>
           </Link>
         </section>
       )}
-
-      {/* ── POPULAR MOVIES ── */}
-      <section className="section-content py-12 px-6 lg:px-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="section-title">Popular Movies</h2>
-          <Link to="/browse?type=movie" className="text-[var(--text-secondary)] hover:text-white text-sm flex items-center gap-1.5 transition-colors group">
-            View All <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-        <div className="scroll-row">
-          {popularMovies.length === 0
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="w-[160px] md:w-[180px] aspect-[2/3] skeleton rounded-2xl flex-shrink-0" />
-              ))
-            : popularMovies.map((content, idx) => (
-                <div key={content.id} className="row-card w-[160px] md:w-[180px]">
-                  <ContentCard content={content} />
-                </div>
-              ))
-          }
-        </div>
-      </section>
-
-      {/* ── NOW PLAYING ── */}
-      <section className="section-content py-12 px-6 lg:px-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="section-title">Now Playing</h2>
-          <Link to="/browse?sort=now_playing" className="text-[var(--text-secondary)] hover:text-white text-sm flex items-center gap-1.5 transition-colors group">
-            View All <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-        <div className="scroll-row">
-          {nowPlaying.map((content, idx) => (
-            <div key={content.id} className="row-card w-[160px] md:w-[180px]">
-              <ContentCard content={content} />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── TV SERIES ── */}
-      <section className="section-content py-12 px-6 lg:px-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="section-title">TV Series</h2>
-          <Link to="/browse?type=series" className="text-[var(--text-secondary)] hover:text-white text-sm flex items-center gap-1.5 transition-colors group">
-            View All <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-        <div className="scroll-row">
-          {popularSeries.length === 0
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="w-[160px] md:w-[180px] aspect-[2/3] skeleton rounded-2xl flex-shrink-0" />
-              ))
-            : popularSeries.map((content, idx) => (
-                <div key={content.id} className="row-card w-[160px] md:w-[180px]">
-                  <ContentCard content={content} />
-                </div>
-              ))
-          }
-        </div>
-      </section>
-
-      {/* ── CTA BANNER ── */}
-      <section className="section-content py-20 px-6 lg:px-16">
-        <div className="relative rounded-3xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/20 via-[#FF6B4A]/10 to-[var(--bg-card)]" />
-          <div className="absolute inset-0 backdrop-blur-xl" />
-          <div className="relative p-12 lg:p-20 text-center">
-            <h2 className="text-3xl lg:text-5xl font-bold text-white mb-5" style={{ fontFamily: 'Sora, sans-serif' }}>
-              Stream Unlimited. <span className="gradient-text">Anytime.</span> Anywhere.
-            </h2>
-            <p className="text-white/70 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-              Access thousands of movies, shows, live news, and songs.
-            </p>
-            <Link to="/pricing" className="btn-accent inline-flex items-center gap-2 text-lg px-10 py-4">
-              Subscribe Now <ChevronRight className="w-5 h-5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
     </div>
   );
 }

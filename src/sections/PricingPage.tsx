@@ -40,12 +40,12 @@ export function PricingPage() {
 
         <div className="flex justify-center mb-14">
           <div className="inline-flex items-center gap-3 p-1.5 glass rounded-full">
-            <button onClick={() => setBillingCycle('monthly')} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${billingCycle === 'monthly' ? 'bg-gradient-to-r from-[var(--accent)] to-[#FF6B4A] text-white shadow-lg' : 'text-[var(--text-secondary)] hover:text-white'}`}>
+            <button onClick={() => setBillingCycle('monthly')} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${billingCycle === 'monthly' ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white shadow-lg' : 'text-[var(--text-secondary)] hover:text-white'}`}>
               Monthly
             </button>
-            <button onClick={() => setBillingCycle('annual')} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${billingCycle === 'annual' ? 'bg-gradient-to-r from-[var(--accent)] to-[#FF6B4A] text-white shadow-lg' : 'text-[var(--text-secondary)] hover:text-white'}`}>
+            <button onClick={() => setBillingCycle('annual')} className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${billingCycle === 'annual' ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white shadow-lg' : 'text-[var(--text-secondary)] hover:text-white'}`}>
               Annual
-              <span className={`text-xs px-2 py-0.5 rounded-full ${billingCycle === 'annual' ? 'bg-white/20' : 'bg-green-500/20 text-green-400'}`}>Save 20%</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${billingCycle === 'annual' ? 'bg-white/20' : 'bg-red-500/20 text-red-400'}`}>Save 20%</span>
             </button>
           </div>
         </div>
@@ -59,7 +59,7 @@ export function PricingPage() {
               <div key={plan.id} className={`relative glass-card p-8 rounded-3xl transition-all duration-500 hover:scale-[1.02] ${plan.isPopular ? 'border-[var(--accent)] glow-accent' : ''}`}>
                 {plan.isPopular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 bg-gradient-to-r from-[var(--accent)] to-[#FF6B4A] text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1.5">
+                    <span className="px-4 py-1.5 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5" /> Most Popular
                     </span>
                   </div>
@@ -84,7 +84,7 @@ export function PricingPage() {
                 {isCurrentPlan ? (
                   <button className="w-full py-3.5 rounded-xl border-2 border-[var(--accent)] text-[var(--accent)] font-semibold cursor-default">Current Plan</button>
                 ) : (
-                  <Link to={isAuthenticated ? '#' : '/register'} className={`block w-full py-3.5 rounded-xl text-center font-semibold transition-all duration-300 ${plan.isPopular ? 'bg-gradient-to-r from-[var(--accent)] to-[#FF6B4A] text-white hover:shadow-lg hover:shadow-[var(--accent)]/30' : 'btn-ghost w-full justify-center'}`}>
+                  <Link to={isAuthenticated ? '#' : '/register'} className={`block w-full py-3.5 rounded-xl text-center font-semibold transition-all duration-300 ${plan.isPopular ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white hover:shadow-lg hover:shadow-[var(--accent)]/30' : 'btn-ghost w-full justify-center'}`}>
                     {plan.id === 'free' ? 'Get Started' : 'Subscribe'}
                   </Link>
                 )}

@@ -44,6 +44,7 @@ export interface Content {
   duration?: number;
   releaseYear: number;
   rating: string;
+  tmdbRating?: string;
   languages: string[];
   genres: string[];
   region: string;

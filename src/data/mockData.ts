@@ -13,7 +13,7 @@ import type {
   Notification,
   WatchHistory,
 } from '@/types';
-
+import type { ContentType } from '@/types';
 // Users
 export const mockUsers: User[] = [
   {

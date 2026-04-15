@@ -1,96 +1,107 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, X, Film, Music, Radio, TrendingUp } from 'lucide-react';
+import { Search, X, Film, Tv, TrendingUp, Flame } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { contentService } from '@/services';
+import { tmdbService } from '@/services/tmdbService';
 import { ContentCard } from '@/components/cards/ContentCard';
-import { usePlayerStore } from '@/store';
 
 const TRENDING_SEARCHES = [
-  'The Last Ember', 'Neon Dreams', 'Action movies', 'Tamil films', 'Live news', 'Romance',
+  'Avengers', 'Breaking Bad', 'Inception', 'The Batman', 'Stranger Things', 'Oppenheimer',
 ];
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const { openPlayer } = usePlayerStore();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
       if (query) setSearchParams({ q: query });
       else setSearchParams({});
-    }, 300);
+    }, 350);
     return () => clearTimeout(timer);
   }, [query, setSearchParams]);
 
   const { data: results, isLoading } = useQuery({
     queryKey: ['search', debouncedQuery],
-    queryFn: () => contentService.searchContent(debouncedQuery),
-    enabled: debouncedQuery.length > 0,
+    queryFn: () => tmdbService.search(debouncedQuery),
+    enabled: debouncedQuery.length > 1,
   });
 
-  const groupedResults = {
-    movies: results?.filter(r => r.type === 'movie') || [],
-    series: results?.filter(r => r.type === 'series') || [],
-    songs: results?.filter(r => r.type === 'song') || [],
-    news: results?.filter(r => r.type === 'news') || [],
-  };
+  const { data: trending = [] } = useQuery({
+    queryKey: ['tmdb-trending'],
+    queryFn: tmdbService.getTrending,
+    staleTime: 5 * 60 * 1000,
+    enabled: !debouncedQuery,
+  });
+
+  const movies = results?.filter((r: any) => r.type === 'movie') || [];
+  const series = results?.filter((r: any) => r.type === 'series') || [];
 
   return (
-    <div className="min-h-screen py-10 px-6 lg:px-16">
-      <div className="max-w-3xl mx-auto mb-14">
-        <h1 className="text-3xl font-bold text-white mb-8 text-center" style={{ fontFamily: 'Sora, sans-serif' }}>
+    <div className="min-h-screen py-8 md:py-12 px-4 md:px-6 lg:px-16">
+      {/* Search Bar */}
+      <div className="max-w-2xl mx-auto mb-10 md:mb-14">
+        <h1 className="text-2xl md:text-3xl font-black text-white mb-6 md:mb-8 text-center uppercase tracking-tight" style={{ fontFamily: 'Sora, sans-serif' }}>
           Search <span className="gradient-text">Camcine</span>
         </h1>
         <div className="relative">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-[var(--accent)]" />
+          <Search
+            className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6"
+            style={{ color: 'var(--accent)' }}
+          />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search movies, series, songs, news..."
-            className="w-full pl-16 pr-14 py-5 glass-input rounded-2xl text-lg text-white placeholder:text-[var(--text-muted)] focus:outline-none"
+            placeholder="Search movies, series..."
+            className="w-full pl-12 md:pl-16 pr-12 py-4 md:py-5 glass-input rounded-2xl text-base md:text-lg text-white placeholder:text-[var(--text-muted)] focus:outline-none"
             autoFocus
           />
           {query && (
-            <button onClick={() => setQuery('')} className="absolute right-5 top-1/2 -translate-y-1/2 p-2 text-[var(--text-muted)] hover:text-white rounded-full hover:bg-white/5 transition-all">
-              <X className="w-5 h-5" />
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 p-2 text-[var(--text-muted)] hover:text-white rounded-full hover:bg-white/5 transition-all"
+            >
+              <X className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           )}
         </div>
       </div>
 
       {debouncedQuery ? (
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-xl font-semibold text-white mb-8 flex items-center gap-3">
-            Results for "<span className="gradient-text">{debouncedQuery}</span>"
-            <span className="text-[var(--text-muted)] text-sm font-normal">({results?.length || 0} found)</span>
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-base md:text-xl font-bold text-white mb-6 md:mb-8 flex flex-wrap items-center gap-2 md:gap-3">
+            Results for <span className="gradient-text">"{debouncedQuery}"</span>
+            <span className="text-[var(--text-muted)] text-xs md:text-sm font-normal">({results?.length || 0} found)</span>
           </h2>
 
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {Array.from({ length: 10 }).map((_, i) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-6">
+              {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="skeleton aspect-[2/3] rounded-xl" />
               ))}
             </div>
           ) : results?.length === 0 ? (
-            <div className="text-center py-24 glass-card rounded-3xl">
-              <Search className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-5" />
-              <h3 className="text-xl font-semibold text-white mb-3">No results found</h3>
-              <p className="text-[var(--text-secondary)] mb-7">Try different keywords or browse categories</p>
-              <button onClick={() => setQuery('')} className="btn-ghost">Clear Search</button>
+            <div className="text-center py-16 md:py-24 glass-card rounded-3xl px-6">
+              <Search className="w-10 h-10 md:w-16 md:h-16 text-white/20 mx-auto mb-4 md:mb-5" />
+              <h3 className="text-lg md:text-xl font-black text-white mb-2 md:mb-3 uppercase tracking-tight">No results found</h3>
+              <p className="text-white/40 mb-6 md:mb-7 text-sm">Try different keywords</p>
+              <button onClick={() => setQuery('')} className="px-8 py-3 rounded-full bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+                Clear Search
+              </button>
             </div>
           ) : (
-            <div className="space-y-12">
-              {groupedResults.movies.length > 0 && (
+            <div className="space-y-10 md:space-y-14">
+              {movies.length > 0 && (
                 <div>
-                  <h3 className="flex items-center gap-3 text-lg font-semibold text-white mb-5">
-                    <Film className="w-5 h-5 text-[var(--accent)]" /> Movies
+                  <h3 className="flex items-center gap-2 md:gap-3 text-base md:text-lg font-black text-white mb-4 md:mb-6 uppercase tracking-tight">
+                    <Film className="w-4 h-4 md:w-5 md:h-5" style={{ color: 'var(--accent)' }} /> Movies
+                    <span className="text-xs text-white/30 font-normal normal-case tracking-normal">({movies.length})</span>
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {groupedResults.movies.map(content => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-5">
+                    {movies.map((content: any) => (
                       <div key={content.id} className="hover-lift">
                         <ContentCard content={content} />
                       </div>
@@ -99,43 +110,14 @@ export function SearchPage() {
                 </div>
               )}
 
-              {groupedResults.series.length > 0 && (
+              {series.length > 0 && (
                 <div>
-                  <h3 className="flex items-center gap-3 text-lg font-semibold text-white mb-5">
-                    <TrendingUp className="w-5 h-5 text-[var(--accent)]" /> TV Series
+                  <h3 className="flex items-center gap-2 md:gap-3 text-base md:text-lg font-black text-white mb-4 md:mb-6 uppercase tracking-tight">
+                    <Tv className="w-4 h-4 md:w-5 md:h-5" style={{ color: 'var(--accent)' }} /> TV Series
+                    <span className="text-xs text-white/30 font-normal normal-case tracking-normal">({series.length})</span>
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {groupedResults.series.map(content => (
-                      <div key={content.id} className="hover-lift">
-                        <ContentCard content={content} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {groupedResults.songs.length > 0 && (
-                <div>
-                  <h3 className="flex items-center gap-3 text-lg font-semibold text-white mb-5">
-                    <Music className="w-5 h-5 text-[var(--accent)]" /> Songs
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {groupedResults.songs.map(content => (
-                      <div key={content.id} className="hover-lift">
-                        <ContentCard content={content} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {groupedResults.news.length > 0 && (
-                <div>
-                  <h3 className="flex items-center gap-3 text-lg font-semibold text-white mb-5">
-                    <Radio className="w-5 h-5 text-[var(--accent)]" /> News
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {groupedResults.news.map(content => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-5">
+                    {series.map((content: any) => (
                       <div key={content.id} className="hover-lift">
                         <ContentCard content={content} />
                       </div>
@@ -147,34 +129,40 @@ export function SearchPage() {
           )}
         </div>
       ) : (
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-lg font-semibold text-white mb-5">Trending Searches</h2>
-          <div className="flex flex-wrap gap-3 mb-14">
-            {TRENDING_SEARCHES.map((term) => (
-              <button
-                key={term}
-                onClick={() => setQuery(term)}
-                className="px-5 py-2.5 glass rounded-full text-[var(--text-secondary)] hover:text-white hover:border-[var(--accent)]/50 transition-all hover-lift"
-              >
-                {term}
-              </button>
-            ))}
+        <div className="max-w-7xl mx-auto">
+          {/* Trending searches */}
+          <div className="mb-8 md:mb-12">
+            <h2 className="flex items-center gap-2 text-sm md:text-base font-black text-white mb-4 uppercase tracking-widest">
+              <TrendingUp className="w-4 h-4" style={{ color: 'var(--accent)' }} /> Trending Searches
+            </h2>
+            <div className="flex flex-wrap gap-2 md:gap-3">
+              {TRENDING_SEARCHES.map((term) => (
+                <button
+                  key={term}
+                  onClick={() => setQuery(term)}
+                  className="px-4 md:px-5 py-2 md:py-2.5 glass rounded-full text-white/60 hover:text-white text-xs md:text-sm font-bold hover:border-[var(--accent)]/40 transition-all hover-lift"
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-            {[
-              { icon: Film, label: 'Movies', count: '500+' },
-              { icon: TrendingUp, label: 'Series', count: '200+' },
-              { icon: Music, label: 'Songs', count: '10K+' },
-              { icon: Radio, label: 'Live News', count: '50+' },
-            ].map(({ icon: Icon, label, count }) => (
-              <div key={label} className="p-8 glass-card text-center hover-lift group cursor-pointer">
-                <Icon className="w-10 h-10 text-[var(--accent)] mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <p className="font-semibold text-white mb-1">{label}</p>
-                <p className="text-sm text-[var(--text-muted)]">{count}</p>
+          {/* Trending content */}
+          {trending.length > 0 && (
+            <div>
+              <h2 className="flex items-center gap-2 text-sm md:text-base font-black text-white mb-4 md:mb-6 uppercase tracking-widest">
+                <Flame className="w-4 h-4" style={{ color: 'var(--accent)' }} /> Trending Now
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-5">
+                {trending.slice(0, 12).map((content: any) => (
+                  <div key={content.id} className="hover-lift">
+                    <ContentCard content={content} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -23,7 +23,7 @@ export function RegisterPage() {
   };
 
   const strength = getPasswordStrength();
-  const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
+  const strengthColors = ['bg-red-900', 'bg-red-700', 'bg-red-500', 'bg-red-400'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,13 +38,13 @@ export function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--bg-base)] relative overflow-hidden">
       <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[var(--accent)]/[0.06] blur-[150px] animate-pulse" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#FF6B4A]/[0.04] blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[var(--accent-hover)]/[0.04] blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
 
       <div className="relative w-full max-w-md">
         <div className="glass-card p-10 rounded-3xl">
           <div className="text-center mb-10">
             <Link to="/" className="inline-flex items-center gap-3 mb-8 group">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[#FF6B4A] transition-transform group-hover:scale-110">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] transition-transform group-hover:scale-110">
                 <Film className="w-7 h-7 text-white" />
               </div>
               <span className="font-bold text-2xl text-white" style={{ fontFamily: 'Sora, sans-serif' }}>

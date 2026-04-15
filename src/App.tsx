@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useAuthStore, useUIStore } from '@/store';
+import { useAuthStore } from '@/store';
 
 import { Header } from '@/components/layout/Header';
-import { Sidebar } from '@/components/layout/Sidebar';
+import { Footer } from '@/components/layout/Footer';
 
 import { HomePage } from '@/sections/HomePage';
 import { BrowsePage } from '@/sections/BrowsePage';
@@ -30,6 +30,16 @@ const queryClient = new QueryClient({
   },
 });
 
+function ScrollToTop() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
 
@@ -41,17 +51,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppLayout({ children }: { children: React.ReactNode }) {
-  const { sidebarOpen, setSidebarOpen } = useUIStore();
-
   return (
     <div className="min-h-screen bg-[var(--bg-base)]">
       <Header />
-      <div className="flex pt-[60px] lg:pt-20">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="flex-1 ">
+      <div className="pt-16 md:pt-20">
+        <main className=" pb-8 md:pb-12">
           {children}
         </main>
       </div>
+      <Footer />
       <Player />
       <Toaster />
     </div>
@@ -68,6 +76,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
