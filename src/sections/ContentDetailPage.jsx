@@ -11,8 +11,14 @@ export function ContentDetailPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const { openPlayer } = usePlayerStore();
-  const { isAuthenticated } = useAuthStore();
-  const { watchlist, addToWatchlist, removeFromWatchlist } = useWatchlistStore();
+const { isAuthenticated, user } = useAuthStore();
+const { watchlist, fetchWatchlist, addToWatchlist, removeFromWatchlist } = useWatchlistStore();
+
+useEffect(() => {
+  if (isAuthenticated && user?.id) {
+    fetchWatchlist(user.id);
+  }
+}, [isAuthenticated, user?.id, fetchWatchlist]);
 
   const [selectedSeasonIdx, setSelectedSeasonIdx] = useState(0);
   const [showTrailer, setShowTrailer] = useState(false);
@@ -84,8 +90,8 @@ export function ContentDetailPage() {
   const playableSeasons = series?.seasons?.filter((season) => season.number > 0) ?? [];
   const currentSeason = playableSeasons[selectedSeasonIdx];
 
-  useEffect(() => {
-    if (selectedSeasonIdx >= playableSeasons.length && selectedSeasonIdx !== 0) {
+useEffect(() => {
+    if (selectedSeasonIdx > 0 && selectedSeasonIdx >= playableSeasons.length) {
       setSelectedSeasonIdx(0);
     }
   }, [playableSeasons.length, selectedSeasonIdx]);
@@ -116,11 +122,15 @@ export function ContentDetailPage() {
 
   const isInWatchlist = watchlist.some((item) => item.id === content.id);
 
-  const handleWatchlistToggle = () => {
-    if (!isAuthenticated) return;
-    if (isInWatchlist) removeFromWatchlist('user-1', content.id);
-    else addToWatchlist('user-1', content.id);
-  };
+const handleWatchlistToggle = async () => {
+  if (!isAuthenticated || !user?.id) return;
+
+  if (isInWatchlist) {
+    await removeFromWatchlist(user.id, content.id);
+  } else {
+    await addToWatchlist(user.id, content.id);
+  }
+};
 
   const trailerOpts = {
     playerVars: {

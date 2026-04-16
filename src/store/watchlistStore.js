@@ -13,87 +13,119 @@ export const useWatchlistStore = create(
       error: null,
 
       fetchWatchlist: async (userId) => {
+        if (!userId) return;
+
         set({ isLoading: true, error: null });
         try {
           const watchlist = await userService.getWatchlist(userId);
           set({ watchlist, isLoading: false });
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Failed to fetch watchlist',
-            isLoading: false 
+          set({
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to fetch watchlist',
+            isLoading: false,
           });
         }
       },
 
       fetchWatchHistory: async (userId) => {
+        if (!userId) return;
+
         set({ isLoading: true, error: null });
         try {
-          const history = await userService.getContinueWatching(userId);
-          set({ 
-            watchHistory: history.map(h => ({
+          const history = await userService.getWatchHistory(userId);
+          set({
+            watchHistory: history.map((h) => ({
               content: h.content,
               progress: h.progress,
               episodeId: h.episodeId,
-              watchedAt: new Date(),
+              watchedAt: h.watchedAt || new Date(),
             })),
-            isLoading: false 
+            isLoading: false,
           });
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Failed to fetch watch history',
-            isLoading: false 
+          set({
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to fetch watch history',
+            isLoading: false,
           });
         }
       },
 
       fetchContinueWatching: async (userId) => {
+        if (!userId) return;
+
         set({ isLoading: true, error: null });
         try {
           const continueWatching = await userService.getContinueWatching(userId);
           set({ continueWatching, isLoading: false });
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Failed to fetch continue watching',
-            isLoading: false 
+          set({
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to fetch continue watching',
+            isLoading: false,
           });
         }
       },
 
       addToWatchlist: async (userId, contentId) => {
+        if (!userId || !contentId) return;
+
         set({ isLoading: true, error: null });
         try {
           await userService.addToWatchlist(userId, contentId);
           const watchlist = await userService.getWatchlist(userId);
           set({ watchlist, isLoading: false });
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Failed to add to watchlist',
-            isLoading: false 
+          set({
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to add to watchlist',
+            isLoading: false,
           });
         }
       },
 
       removeFromWatchlist: async (userId, contentId) => {
+        if (!userId || !contentId) return;
+
         set({ isLoading: true, error: null });
         try {
           await userService.removeFromWatchlist(userId, contentId);
           const watchlist = await userService.getWatchlist(userId);
           set({ watchlist, isLoading: false });
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Failed to remove from watchlist',
-            isLoading: false 
+          set({
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to remove from watchlist',
+            isLoading: false,
           });
         }
       },
 
       isInWatchlist: (contentId) => {
-        return get().watchlist.some(item => item.id === contentId);
+        return get().watchlist.some((item) => item.id === contentId);
       },
 
       updateWatchProgress: async (userId, contentId, progress, episodeId) => {
+        if (!userId || !contentId) return;
+
         try {
-          await userService.updateWatchProgress(userId, contentId, progress, episodeId);
+          await userService.updateWatchProgress(
+            userId,
+            contentId,
+            progress,
+            episodeId
+          );
           const continueWatching = await userService.getContinueWatching(userId);
           set({ continueWatching });
         } catch (error) {
@@ -105,7 +137,10 @@ export const useWatchlistStore = create(
     }),
     {
       name: 'camcine-watchlist',
-      partialize: (state) => ({ watchlist: state.watchlist }),
+      partialize: (state) => ({
+        watchlist: state.watchlist,
+        continueWatching: state.continueWatching,
+      }),
     }
   )
 );
