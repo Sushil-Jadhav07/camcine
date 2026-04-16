@@ -1,0 +1,11 @@
+export { HomePage } from './HomePage';
+export { BrowsePage } from './BrowsePage';
+export { ContentDetailPage } from './ContentDetailPage';
+export { PlayerPage } from './PlayerPage';
+export { SearchPage } from './SearchPage';
+export { SongsPage } from './SongsPage';
+export { NewsPage } from './NewsPage';
+export { PricingPage } from './PricingPage';
+export { AccountPage } from './AccountPage';
+export { LoginPage } from './LoginPage';
+export { RegisterPage } from './RegisterPage';
