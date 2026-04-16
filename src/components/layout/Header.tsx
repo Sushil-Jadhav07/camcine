@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, X, Bell, User, ChevronDown, Film } from 'lucide-react';
+import { Search, X, Bell, User, ChevronDown, Film, Menu } from 'lucide-react';
 import { useAuthStore, useUIStore } from '@/store';
 
 export function Header() {
@@ -10,8 +10,10 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const mobileSearchVisible = searchOpen && location.pathname !== '/search';
@@ -26,6 +28,9 @@ export function Header() {
     const handleClick = (e: MouseEvent) => {
       if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
         setMoreOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
       }
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setAccountOpen(false);
@@ -51,6 +56,8 @@ export function Header() {
     { path: '/live-news', label: 'Live News' },
     { path: '/pricing', label: 'Pricing' },
   ];
+
+  const mobileLinks = [...primaryLinks, ...moreLinks];
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -223,7 +230,10 @@ export function Header() {
           {/* Mobile Search Icon Only */}
           <button
             className="md:hidden p-2 rounded-full text-[var(--text-secondary)] hover:text-white"
-            onClick={() => setSearchOpen(!searchOpen)}
+            onClick={() => {
+              setSearchOpen(!searchOpen);
+              setMobileMenuOpen(false);
+            }}
             aria-label="Toggle search"
           >
             <Search className="w-5 h-5" />
@@ -263,7 +273,7 @@ export function Header() {
                       boxShadow: '0 0 0 1px rgba(255,255,255,0.08)',
                     }}
                   >
-                    <User className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+                    <User className="w-4 h-4" />
                   </div>
                 )}
                 <ChevronDown className={`hidden md:block w-4 h-4 text-white/40 transition-transform duration-200 ${accountOpen ? 'rotate-180' : ''}`} />
@@ -298,20 +308,6 @@ export function Header() {
                   >
                     <Bell className="w-4 h-4" /> Watchlist
                   </Link>
-                  <div className="h-px bg-white/5 my-2 mx-4 md:hidden" />
-                  {/* Mobile nav links in account dropdown */}
-                  <div className="md:hidden">
-                    {primaryLinks.map(link => (
-                      <Link
-                        key={link.path}
-                        to={link.path}
-                        onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 transition-all"
-                      >
-                         {link.label}
-                      </Link>
-                    ))}
-                  </div>
                   <div className="h-px bg-white/5 my-2 mx-4" />
                   <button
                     onClick={() => { /* Logout logic */ setAccountOpen(false); }}
@@ -325,11 +321,76 @@ export function Header() {
           ) : (
             <Link
               to="/login"
-              className="px-4 md:px-5 py-2 rounded-full bg-[var(--accent)] text-white text-[10px] md:text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(232,68,44,0.3)] hover:scale-105 transition-all active:scale-95"
+              className="px-3 md:px-5 py-2 rounded-full bg-[var(--accent)] text-white text-[10px] md:text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(232,68,44,0.3)] hover:scale-105 transition-all active:scale-95"
             >
               Sign In
             </Link>
           )}
+
+          {/* Mobile Menu */}
+          <div className="lg:hidden" ref={mobileMenuRef}>
+            <button
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-white hover:bg-white/5 transition-all"
+              onClick={() => {
+                setMobileMenuOpen(v => !v);
+                setSearchOpen(false);
+                setAccountOpen(false);
+              }}
+              aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
+            {mobileMenuOpen && (
+              <div
+                className="fixed left-3 right-3 top-[72px] z-50 overflow-hidden rounded-2xl p-3 animate-in fade-in slide-in-from-top-2 duration-200"
+                style={{
+                  background: 'rgba(8,10,14,0.97)',
+                  backdropFilter: 'blur(28px)',
+                  WebkitBackdropFilter: 'blur(28px)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 18px 50px rgba(0,0,0,0.72)',
+                }}
+              >
+                <div className="mb-2 flex items-center justify-between px-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/35">
+                    Menu
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
+                    Camcine
+                  </span>
+                </div>
+
+                <nav className="grid grid-cols-2 gap-2">
+                  {mobileLinks.map(link => {
+                    const active = isActive(link.path);
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex min-h-11 items-center justify-between rounded-lg border px-3 text-xs font-black uppercase tracking-widest transition-all"
+                        style={{
+                          color: active ? '#fff' : 'rgba(255,255,255,0.68)',
+                          background: active ? 'rgba(122,16,39,0.28)' : 'rgba(255,255,255,0.04)',
+                          borderColor: active ? 'rgba(122,16,39,0.46)' : 'rgba(255,255,255,0.07)',
+                        }}
+                      >
+                        {link.label}
+                        {active && (
+                          <span
+                            className="h-2 w-2 rounded-full shrink-0"
+                            style={{ background: 'var(--accent)', boxShadow: '0 0 8px rgba(122,16,39,0.8)' }}
+                          />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
