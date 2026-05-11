@@ -26,6 +26,8 @@ import { PricingPage } from '@/sections/PricingPage';
 import { AccountPage } from '@/sections/AccountPage';
 import { LoginPage } from '@/sections/LoginPage';
 import { RegisterPage } from '@/sections/RegisterPage';
+import { ForgotPasswordPage } from '@/sections/ForgotPasswordPage';
+import { ChangePasswordPage } from '@/sections/ChangePasswordPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -107,6 +109,22 @@ function AppRouter() {
           element={
             <PublicOnlyRoute>
               <RegisterPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicOnlyRoute>
+              <ForgotPasswordPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <PublicOnlyRoute>
+              <ChangePasswordPage />
             </PublicOnlyRoute>
           }
         />

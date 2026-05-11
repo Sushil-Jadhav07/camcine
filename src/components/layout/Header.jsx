@@ -5,7 +5,7 @@ import { useAuthStore, useUIStore } from '@/store';
 
 export function Header() {
   const location = useLocation();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const { searchOpen, setSearchOpen, searchQuery, setSearchQuery } = useUIStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -300,7 +300,10 @@ export function Header() {
                   </Link>
                   <div className="h-px bg-white/5 my-2 mx-4" />
                   <button
-                    onClick={() => { setAccountOpen(false); }}
+                    onClick={() => {
+                      logout();
+                      setAccountOpen(false);
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all text-left"
                   >
                     <X className="w-4 h-4" /> Sign Out

@@ -1,134 +1,182 @@
-// Camcine - Auth Service (Mock API)
-import { mockUsers } from '@/data/mockData';
+// Camcine - Auth Service
+import { apiRequest, tokenStorage, userStorage } from './apiClient';
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const pickToken = (payload) =>
+  payload?.data?.token ||
+  payload?.data?.access_token ||
+  payload?.data?.accessToken ||
+  payload?.data?.jwt ||
+  payload?.token ||
+  payload?.access_token ||
+  payload?.accessToken ||
+  null;
 
-let currentUser = null;
+const pickUser = (payload) =>
+  payload?.data?.user ||
+  payload?.data?.profile ||
+  payload?.data?.user_details ||
+  payload?.user ||
+  null;
+
+const splitName = (name = '') => {
+  const [firstName = '', ...rest] = name.trim().split(/\s+/).filter(Boolean);
+  return {
+    first_name: firstName,
+    last_name: rest.join(' '),
+  };
+};
+
+const normalizeUser = (user) => {
+  if (!user) return null;
+
+  const firstName = user.first_name || user.firstName || '';
+  const lastName = user.last_name || user.lastName || '';
+  const fullName = user.name || `${firstName} ${lastName}`.trim() || user.email || 'User';
+
+  return {
+    ...user,
+    first_name: firstName,
+    last_name: lastName,
+    phone_number: user.phone_number || user.phoneNumber || '',
+    name: fullName,
+    role: user.role || 'viewer',
+    subscription: user.subscription || 'free',
+    preferences: user.preferences || {
+      languages: user.language_preferences || [],
+      regions: user.regions || [],
+      autoplay: true,
+      subtitles: true,
+      quality: 'auto',
+    },
+    createdAt: user.createdAt || user.created_at,
+    updatedAt: user.updatedAt || user.updated_at,
+  };
+};
+
+const persistSession = (payload) => {
+  const token = pickToken(payload);
+  const user = normalizeUser(pickUser(payload));
+
+  if (token) {
+    tokenStorage.set(token);
+  }
+
+  if (user) {
+    userStorage.set(user);
+  }
+
+  return user;
+};
 
 export const authService = {
   async login(email, password) {
-    await delay(800);
-    const user = mockUsers.find(u => u.email === email);
+    const response = await apiRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+
+    const user = persistSession(response);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new Error('Login succeeded, but user details were not returned.');
     }
-    currentUser = user;
-    localStorage.setItem('camcine_user', JSON.stringify(user));
+
     return user;
   },
 
-  async register(email, password, name) {
-    await delay(1000);
-    const existingUser = mockUsers.find(u => u.email === email);
-    if (existingUser) {
-      throw new Error('Email already registered');
+  async register(email, password, name, details = {}) {
+    const parsedName = splitName(name);
+    const response = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        first_name: details.first_name || parsedName.first_name,
+        last_name: details.last_name || parsedName.last_name,
+        phone_number: details.phone_number || details.phoneNumber || '',
+        password,
+        role: details.role || 'viewer',
+        age: details.age ? Number(details.age) : undefined,
+      }),
+    });
+
+    const user = persistSession(response);
+    if (user && pickToken(response)) {
+      return user;
     }
-    
-    const newUser = {
-      id: `user-${Date.now()}`,
-      email,
-      name,
-      role: 'viewer',
-      subscription: 'free',
-      createdAt: new Date(),
-      preferences: {
-        languages: ['Hindi', 'English'],
-        genres: ['Drama', 'Comedy'],
-        regions: ['Bollywood'],
-        autoplay: true,
-        subtitles: true,
-        quality: 'auto',
-      },
-    };
-    
-    mockUsers.push(newUser);
-    currentUser = newUser;
-    localStorage.setItem('camcine_user', JSON.stringify(newUser));
-    return newUser;
+
+    return this.login(email, password);
   },
 
   async logout() {
-    await delay(300);
-    currentUser = null;
-    localStorage.removeItem('camcine_user');
+    tokenStorage.remove();
+    userStorage.remove();
   },
 
   async getCurrentUser() {
-    await delay(300);
-    if (currentUser) return currentUser;
-    
-    const stored = localStorage.getItem('camcine_user');
-    if (stored) {
-      currentUser = JSON.parse(stored);
-      return currentUser;
+    if (!tokenStorage.get()) {
+      userStorage.remove();
+      return null;
     }
-    return null;
+
+    try {
+      const response = await apiRequest('/auth/me', { method: 'GET' }, true);
+      const user = normalizeUser(pickUser(response));
+
+      if (user) {
+        userStorage.set(user);
+        return user;
+      }
+    } catch (error) {
+      if (error.status === 401) {
+        await this.logout();
+        return null;
+      }
+      const cachedUser = userStorage.get();
+      if (cachedUser) return normalizeUser(cachedUser);
+      throw error;
+    }
+
+    return normalizeUser(userStorage.get());
   },
 
   async updateProfile(userId, updates) {
-    await delay(600);
-    const userIndex = mockUsers.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
-      throw new Error('User not found');
-    }
-    
-    mockUsers[userIndex] = { ...mockUsers[userIndex], ...updates };
-    currentUser = mockUsers[userIndex];
-    localStorage.setItem('camcine_user', JSON.stringify(currentUser));
-    return mockUsers[userIndex];
+    const cachedUser = userStorage.get();
+    const updatedUser = normalizeUser({ ...cachedUser, ...updates, id: userId || cachedUser?.id });
+    userStorage.set(updatedUser);
+    return updatedUser;
   },
 
   async updateSubscription(userId, subscription) {
-    await delay(800);
-    const userIndex = mockUsers.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
-      throw new Error('User not found');
-    }
-    
-    mockUsers[userIndex].subscription = subscription;
-    mockUsers[userIndex].subscriptionExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-    currentUser = mockUsers[userIndex];
-    localStorage.setItem('camcine_user', JSON.stringify(currentUser));
-    return mockUsers[userIndex];
+    return this.updateProfile(userId, { subscription });
   },
 
   async updatePreferences(userId, preferences) {
-    await delay(500);
-    const userIndex = mockUsers.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
-      throw new Error('User not found');
-    }
-    
-    mockUsers[userIndex].preferences = { 
-      ...mockUsers[userIndex].preferences, 
-      ...preferences 
-    };
-    currentUser = mockUsers[userIndex];
-    localStorage.setItem('camcine_user', JSON.stringify(currentUser));
-    return mockUsers[userIndex];
+    const cachedUser = userStorage.get();
+    return this.updateProfile(userId, {
+      preferences: {
+        ...(cachedUser?.preferences || {}),
+        ...preferences,
+      },
+    });
   },
 
-  async checkContentAccess(userId, contentId) {
-    await delay(300);
-    const user = mockUsers.find(u => u.id === userId);
-    if (!user) return false;
-    
-    if (user.subscription === 'premium' || user.subscription === 'family') {
-      return true;
-    }
-    
+  async checkContentAccess() {
     return true;
   },
 
   async forgotPassword(email) {
-    await delay(800);
-    const user = mockUsers.find(u => u.email === email);
-    if (!user) {
-      throw new Error('Email not found');
-    }
+    return apiRequest('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
   },
 
-  async resetPassword(token, newPassword) {
-    await delay(800);
+  async resetPassword(resetToken, newPassword) {
+    return apiRequest('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        reset_token: resetToken,
+        new_password: newPassword,
+      }),
+    });
   },
 };

@@ -1,7 +1,9 @@
 // Camcine - API Client
-// Base URL from production server (GCP): https://camcine-api-604298774917.asia-south1.run.app/api/v1
+// Production server (GCP): https://camcine-api-604298774917.asia-south1.run.app/api/v1
 
-const BASE_URL = 'https://camcine-api-604298774917.asia-south1.run.app/api/v1';
+export const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://camcine-api-604298774917.asia-south1.run.app/api/v1';
 
 // Token storage keys
 const TOKEN_KEY = 'camcine_token';
