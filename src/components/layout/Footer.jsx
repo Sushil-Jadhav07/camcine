@@ -25,11 +25,12 @@ export function Footer() {
     {
       title: 'Search',
       links: [
-        { name: 'Filters', path: '/search' },
-        { name: 'Genres', path: '/search' },
-        { name: 'Actors', path: '/search' },
-        { name: 'Streaming', path: '/search' },
-        { name: 'Vote Count', path: '/search' },
+        { name: 'Filters', path: '/' },
+        { name: 'Genres', path: '/' },
+        { name: 'Actors', path: '/' },
+        { name: 'Streaming', path: '/' },
+        { name: 'Vote Count', path: '/' },
+        // { name: 'Vote Count', path: '/search' },
       ],
     },
   ];
@@ -37,20 +38,7 @@ export function Footer() {
   return (
     <footer className="bg-[var(--bg-base)] border-t border-white/5 px-4 pt-14 pb-8 md:px-6 md:pt-0 md:pb-10 lg:px-16">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-12 flex flex-col items-center text-center md:mb-16">
-          <div
-            className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl md:h-16 md:w-16"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-              boxShadow: '0 0 20px rgba(232,68,44,0.4)',
-            }}
-          >
-            <Film className="h-7 w-7 text-white md:h-8 md:w-8" />
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight text-white md:text-3xl" style={{ fontFamily: 'Sora, sans-serif' }}>
-            <span style={{ color: 'var(--accent)' }}>Camcine</span>
-          </h2>
-        </div>
+       
 
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           {footerSections.map((section) => (

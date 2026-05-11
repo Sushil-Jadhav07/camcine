@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { contentService } from '@/services';
+import { ComingSoonOverlay } from '@/sections/ComingSoonOverlay';
 
 const TICKER_HEADLINES = [
   'Breaking: Global markets respond to new tech regulations',
@@ -27,7 +28,8 @@ export function NewsPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen overflow-hidden bg-[var(--bg-base)]">
+    <div className="pointer-events-none min-h-screen select-none blur-md brightness-50">
       <div className="glass-nav overflow-hidden py-3">
         <div className="marquee flex items-center gap-6 whitespace-nowrap">
           <span className="flex-shrink-0 rounded bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-3 py-1 text-xs font-bold text-white shadow-lg shadow-[var(--accent)]/30">
@@ -101,6 +103,8 @@ export function NewsPage() {
           </div>
         </div>
       </div>
+    </div>
+    <ComingSoonOverlay />
     </div>
   );
 }

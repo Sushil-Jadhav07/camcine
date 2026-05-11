@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Play, Star, Download, VolumeX, Volume2, Heart, Bookmark, Share2, ChevronLeft } from 'lucide-react';
+import { Play, Star, VolumeX, Volume2, Heart, Bookmark, Share2, ChevronLeft } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { tmdbService } from '@/services/tmdbService';
 import { ContentCard } from '@/components/cards/ContentCard';
 import { usePlayerStore, useAuthStore, useWatchlistStore } from '@/store';
+import { getCamcineById } from '@/data/camcineContent';
 import YouTube from 'react-youtube';
 
 export function ContentDetailPage() {
@@ -13,6 +14,7 @@ export function ContentDetailPage() {
   const { openPlayer } = usePlayerStore();
 const { isAuthenticated, user } = useAuthStore();
 const { watchlist, fetchWatchlist, addToWatchlist, removeFromWatchlist } = useWatchlistStore();
+  const camcineContent = getCamcineById(id);
 
 useEffect(() => {
   if (isAuthenticated && user?.id) {
@@ -27,41 +29,44 @@ useEffect(() => {
   const contentType = id?.startsWith('movie') ? 'movie' : 'series';
   const tmdbId = id ? parseInt(id.split('-')[1]) : null;
 
-  const { data: content, isLoading } = useQuery({
+  const { data: tmdbContent, isLoading: isTmdbLoading } = useQuery({
     queryKey: ['content', id],
     queryFn: () =>
       contentType === 'movie'
         ? tmdbService.getMovieDetails(tmdbId)
         : tmdbService.getSeriesDetails(tmdbId),
-    enabled: !!tmdbId,
+    enabled: !camcineContent && !!tmdbId,
   });
 
-  const { data: similarContent } = useQuery({
+  const { data: tmdbSimilarContent } = useQuery({
     queryKey: ['similar', id],
     queryFn: () =>
       contentType === 'movie'
         ? tmdbService.getSimilarMovies(tmdbId)
         : tmdbService.getSimilarSeries(tmdbId),
-    enabled: !!tmdbId,
+    enabled: !camcineContent && !!tmdbId,
   });
 
-  const videoId = useMemo(() => {
-    if (!content?.trailer) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = content.trailer.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-  }, [content?.trailer]);
+  const content = camcineContent || tmdbContent;
+  const isLoading = !camcineContent && isTmdbLoading;
+  const similarContent = camcineContent ? [] : tmdbSimilarContent;
+  const displayReleaseYear = camcineContent ? '2026' : content?.releaseYear?.toString();
+
+  const trailer = content?.trailer;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = trailer?.match(regExp);
+  const videoId = match && match[2].length === 11 ? match[2] : null;
 
   useEffect(() => {
     let timer;
-    if (videoId) {
+    if (videoId || content?.trailerSrc) {
       timer = setTimeout(() => setShowTrailer(true), 5000);
     }
     return () => {
       if (timer) clearTimeout(timer);
       setShowTrailer(false);
     };
-  }, [videoId]);
+  }, [videoId, content?.trailerSrc]);
 
   useEffect(() => {
     if (contentType === 'series' && content && tmdbId) {
@@ -88,13 +93,8 @@ useEffect(() => {
   const isSeries = content?.type === 'series';
   const series = isSeries ? content : null;
   const playableSeasons = series?.seasons?.filter((season) => season.number > 0) ?? [];
-  const currentSeason = playableSeasons[selectedSeasonIdx];
-
-useEffect(() => {
-    if (selectedSeasonIdx > 0 && selectedSeasonIdx >= playableSeasons.length) {
-      setSelectedSeasonIdx(0);
-    }
-  }, [playableSeasons.length, selectedSeasonIdx]);
+  const activeSeasonIdx = selectedSeasonIdx < playableSeasons.length ? selectedSeasonIdx : 0;
+  const currentSeason = playableSeasons[activeSeasonIdx];
 
   if (isLoading) {
     return (
@@ -151,7 +151,19 @@ const handleWatchlistToggle = async () => {
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-white">
       <div className="relative w-full min-h-[70svh] md:min-h-[75vh] lg:min-h-[85vh] overflow-hidden">
-        {showTrailer && videoId ? (
+        {showTrailer && content.trailerSrc ? (
+          <div className="absolute inset-0 z-0 scale-110 pointer-events-none">
+            <video
+              src={content.trailerSrc}
+              autoPlay
+              loop
+              muted={trailerMuted}
+              playsInline
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/30" />
+          </div>
+        ) : showTrailer && videoId ? (
           <div className="absolute inset-0 z-0 scale-110 pointer-events-none">
             <YouTube
               videoId={videoId}
@@ -198,7 +210,7 @@ const handleWatchlistToggle = async () => {
                   {content.tmdbRating}
                 </div>
                 <span className="text-white/50 text-xs font-bold uppercase tracking-widest">
-                  {content.releaseYear}
+                  {displayReleaseYear}
                 </span>
                 {content.duration ? (
                   <span className="text-white/50 text-xs font-bold uppercase tracking-widest">
@@ -279,7 +291,7 @@ const handleWatchlistToggle = async () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4 md:gap-y-6">
               <DetailItem label="Country" value={content.region || 'N/A'} />
               <DetailItem label="Genre" value={content.genres?.join(', ') || 'N/A'} />
-              <DetailItem label="Year" value={content.releaseYear?.toString()} />
+              <DetailItem label="Year" value={displayReleaseYear} />
               <DetailItem
                 label="Director"
                 value={content.crew?.find((c) => c.role === 'Director')?.name || 'N/A'}
@@ -331,7 +343,7 @@ const handleWatchlistToggle = async () => {
                         key={season.id}
                         onClick={() => setSelectedSeasonIdx(idx)}
                         className={`flex-shrink-0 px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${
-                          selectedSeasonIdx === idx
+                          activeSeasonIdx === idx
                             ? 'bg-[var(--accent)] text-white'
                             : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
                         }`}
@@ -401,53 +413,6 @@ const handleWatchlistToggle = async () => {
             )}
           </div>
 
-          <div className="w-full lg:w-[340px] xl:w-[380px] shrink-0">
-            <div className="bg-[#0D1014] rounded-2xl border border-white/5 overflow-hidden shadow-2xl lg:sticky lg:top-24">
-              <div className="flex items-center gap-3 p-4 md:p-5 border-b border-white/5 bg-white/[0.02]">
-                <Play className="w-4 h-4 text-[var(--accent)] fill-current" />
-                <h3 className="font-black text-white uppercase tracking-widest text-xs">
-                  {isSeries ? 'Stream Episode' : 'Stream Movie'}
-                </h3>
-              </div>
-
-              <div className="p-2 space-y-1">
-                <button
-                  onClick={() => openPlayer(content)}
-                  className="w-full flex items-center justify-between p-3.5 md:p-4 rounded-xl bg-[var(--accent)] text-white font-black text-xs md:text-sm transition-all group hover:bg-[var(--accent-hover)]"
-                >
-                  <span>{isSeries ? 'Watch Series' : 'Stream HD'}</span>
-                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                </button>
-
-                {[
-                  { label: isSeries ? 'Download Season' : 'Download 4K', icon: Download },
-                  { label: 'Stream 4K Ultra', icon: Play },
-                ].map(({ label, icon: Icon }, i) => (
-                  <button
-                    key={i}
-                    className="w-full flex items-center justify-between p-3.5 md:p-4 rounded-xl hover:bg-white/5 text-white/40 hover:text-white font-black text-xs md:text-sm transition-all group"
-                  >
-                    <span>{label}</span>
-                    <Icon className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
-                ))}
-              </div>
-
-              <div className="lg:hidden p-4 border-t border-white/5">
-                <img
-                  src={content.poster}
-                  alt={content.title}
-                  className="w-full max-w-[160px] mx-auto aspect-[2/3] object-cover rounded-xl"
-                />
-              </div>
-
-              <div className="p-4 md:p-5 bg-black/20 text-center">
-                <p className="text-[9px] md:text-[10px] text-white/30 font-black uppercase tracking-[0.2em]">
-                  Premium quality streaming
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

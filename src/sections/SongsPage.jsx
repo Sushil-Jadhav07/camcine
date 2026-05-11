@@ -3,6 +3,7 @@ import { Search, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { contentService } from '@/services';
 import { usePlayerStore } from '@/store';
+import { ComingSoonOverlay } from '@/sections/ComingSoonOverlay';
 
 export function SongsPage() {
   const { openPlayer } = usePlayerStore();
@@ -20,7 +21,8 @@ export function SongsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#06080A] text-white pt-6 md:pt-10 px-4 md:px-6 lg:px-16">
+    <div className="relative min-h-screen overflow-hidden bg-[var(--bg-base)]">
+    <div className="pointer-events-none min-h-screen select-none bg-[#06080A] px-4 pt-6 text-white blur-md brightness-50 md:px-6 md:pt-10 lg:px-16">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter" style={{ fontFamily: 'Sora, sans-serif' }}>
@@ -83,6 +85,8 @@ export function SongsPage() {
           </div>
         ))}
       </div>
+    </div>
+    <ComingSoonOverlay />
     </div>
   );
 }

@@ -70,7 +70,7 @@ export function Header() {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+      className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500"
       style={{ height: '64px' }}
     >
       <div
@@ -156,7 +156,7 @@ export function Header() {
               </button>
               {moreOpen && (
                 <div
-                  className="absolute top-[calc(100%+8px)] right-0 min-w-[140px] rounded-xl py-1.5 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200"
+                  className="absolute top-[calc(100%+8px)] right-0 min-w-[140px] rounded-xl py-1.5 overflow-hidden z-[110] animate-in fade-in zoom-in-95 duration-200"
                   style={{
                     background: 'rgba(13,16,20,0.95)',
                     backdropFilter: 'blur(24px)',
@@ -271,7 +271,7 @@ export function Header() {
 
               {accountOpen && (
                 <div
-                  className="absolute top-[calc(100%+8px)] right-0 min-w-[200px] rounded-2xl py-2 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                  className="absolute top-[calc(100%+8px)] right-0 min-w-[200px] rounded-2xl py-2 overflow-hidden z-[110] animate-in fade-in slide-in-from-top-2 duration-200"
                   style={{
                     background: 'rgba(13,16,20,0.98)',
                     backdropFilter: 'blur(32px)',
@@ -333,7 +333,7 @@ export function Header() {
 
             {mobileMenuOpen && (
               <div
-                className="fixed left-3 right-3 top-[72px] z-50 overflow-hidden rounded-2xl p-3 animate-in fade-in slide-in-from-top-2 duration-200"
+                className="fixed left-3 right-3 top-[72px] z-[110] overflow-hidden rounded-2xl p-3 animate-in fade-in slide-in-from-top-2 duration-200"
                 style={{
                   background: 'rgba(8,10,14,0.97)',
                   backdropFilter: 'blur(28px)',

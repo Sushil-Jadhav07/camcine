@@ -56,7 +56,7 @@ export function PricingPage() {
             const isCurrentPlan = user?.subscription === plan.id;
 
             return (
-              <div key={plan.id} className={`relative glass-card p-8 rounded-3xl transition-all duration-500 hover:scale-[1.02] ${plan.isPopular ? 'border-[var(--accent)] glow-accent' : ''}`}>
+              <div key={plan.id} className={`relative glass-card flex min-h-[580px] flex-col p-8 rounded-3xl transition-all duration-500 hover:scale-[1.02] ${plan.isPopular ? 'border-[var(--accent)] glow-accent' : ''}`}>
                 {plan.isPopular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                     <span className="px-4 py-1.5 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1.5">
@@ -81,13 +81,15 @@ export function PricingPage() {
                   ))}
                 </ul>
 
-                {isCurrentPlan ? (
-                  <button className="w-full py-3.5 rounded-xl border-2 border-[var(--accent)] text-[var(--accent)] font-semibold cursor-default">Current Plan</button>
-                ) : (
-                  <Link to={isAuthenticated ? '#' : '/register'} className={`block w-full py-3.5 rounded-xl text-center font-semibold transition-all duration-300 ${plan.isPopular ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white hover:shadow-lg hover:shadow-[var(--accent)]/30' : 'btn-ghost w-full justify-center'}`}>
-                    {plan.id === 'free' ? 'Get Started' : 'Subscribe'}
-                  </Link>
-                )}
+                <div className="mt-auto">
+                  {isCurrentPlan ? (
+                    <button className="w-full py-3.5 rounded-xl border-2 border-[var(--accent)] text-[var(--accent)] font-semibold cursor-default">Current Plan</button>
+                  ) : (
+                    <Link to={isAuthenticated ? '#' : '/register'} className={`block w-full py-3.5 rounded-xl text-center font-semibold transition-all duration-300 ${plan.isPopular ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white hover:shadow-lg hover:shadow-[var(--accent)]/30' : 'btn-ghost w-full justify-center'}`}>
+                      {plan.id === 'free' ? 'Get Started' : 'Subscribe'}
+                    </Link>
+                  )}
+                </div>
               </div>
             );
           })}
