@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Play, Star, VolumeX, Volume2, Heart, Bookmark, Share2, ChevronLeft } from 'lucide-react';
+import { Play, Star, VolumeX, Volume2, Heart, Bookmark, Share2, ChevronLeft, X } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { tmdbService } from '@/services/tmdbService';
 import { ContentCard } from '@/components/cards/ContentCard';
@@ -24,6 +24,7 @@ useEffect(() => {
 
   const [selectedSeasonIdx, setSelectedSeasonIdx] = useState(0);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [trailerOpen, setTrailerOpen] = useState(false);
   const [trailerMuted, setTrailerMuted] = useState(true);
 
   const contentType = id?.startsWith('movie') ? 'movie' : 'series';
@@ -131,6 +132,20 @@ const handleWatchlistToggle = async () => {
     await addToWatchlist(user.id, content.id);
   }
 };
+
+  const openTrailer = () => {
+    if (content?.trailerSrc || videoId) {
+      setTrailerMuted(true);
+      setTrailerOpen(true);
+      return;
+    }
+
+    openPlayer(content);
+  };
+
+  const closeTrailer = () => {
+    setTrailerOpen(false);
+  };
 
   const trailerOpts = {
     playerVars: {
@@ -245,7 +260,7 @@ const handleWatchlistToggle = async () => {
 
               <div className="flex items-center gap-3 md:gap-4 flex-wrap">
                 <button
-                  onClick={() => openPlayer(content)}
+                  onClick={openTrailer}
                   className="flex items-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-3.5 rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-black text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 shadow-[0_0_30px_rgba(232,68,44,0.3)]"
                 >
                   <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
@@ -282,6 +297,57 @@ const handleWatchlistToggle = async () => {
           </button>
         )}
       </div>
+
+      {trailerOpen && (content.trailerSrc || videoId) && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/85 px-4 py-6 backdrop-blur-xl">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default"
+            aria-label="Close trailer"
+            onClick={closeTrailer}
+          />
+          <div className="relative z-10 w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_30px_90px_rgba(0,0,0,0.75)]">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 md:px-5">
+              <div className="min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-[0.28em] text-[var(--accent)]">Trailer</p>
+                <h3 className="truncate text-sm font-black uppercase text-white md:text-base">{content.title}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={closeTrailer}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+                aria-label="Close trailer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {content.trailerSrc ? (
+              <video
+                key={content.trailerSrc}
+                src={content.trailerSrc}
+                className="aspect-video w-full bg-black object-contain"
+                autoPlay
+                controls
+                playsInline
+              />
+            ) : (
+              <YouTube
+                videoId={videoId}
+                opts={{
+                  playerVars: {
+                    autoplay: 1,
+                    controls: 1,
+                    modestbranding: 1,
+                    rel: 0,
+                  },
+                }}
+                className="aspect-video w-full bg-black"
+                iframeClassName="h-full w-full"
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="px-4 md:px-8 lg:px-16 py-8 md:py-16">
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 max-w-7xl mx-auto">
