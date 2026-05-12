@@ -85,13 +85,20 @@ export const authService = {
 
   async register(email, password, name, details = {}) {
     const parsedName = splitName(name);
+    const firstName = (details.first_name || parsedName.first_name).trim();
+    const lastName = (details.last_name || parsedName.last_name).trim();
+
+    if (!firstName || !lastName) {
+      throw new Error('Please enter your first and last name.');
+    }
+
     const response = await apiRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify({
-        email,
-        first_name: details.first_name || parsedName.first_name,
-        last_name: details.last_name || parsedName.last_name,
-        phone_number: details.phone_number || details.phoneNumber || '',
+        email: email.trim(),
+        first_name: firstName,
+        last_name: lastName,
+        phone_number: (details.phone_number || details.phoneNumber || '').trim(),
         password,
         role: details.role || 'viewer',
         age: details.age ? Number(details.age) : undefined,

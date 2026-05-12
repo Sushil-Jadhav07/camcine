@@ -7,7 +7,8 @@ import { AuthLayout } from '@/components/auth/AuthLayout';
 export function RegisterPage() {
   const navigate = useNavigate();
   const { register, isLoading, error, clearError } = useAuthStore();
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [age, setAge] = useState('');
@@ -15,15 +16,36 @@ export function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     clearError();
-    if (!agreed || password !== confirmPassword) return;
+    setFormError('');
+
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    if (!trimmedFirstName || !trimmedLastName) {
+      setFormError('Please enter both first and last name.');
+      return;
+    }
+
+    if (!agreed) {
+      setFormError('Please accept the Terms of Service and Privacy Policy.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setFormError('Passwords do not match.');
+      return;
+    }
+
     try {
-      await register(email, password, name, {
-        phone_number: phoneNumber,
-        age,
+      await register(email.trim(), password, `${trimmedFirstName} ${trimmedLastName}`, {
+        first_name: trimmedFirstName,
+        last_name: trimmedLastName,
+        phone_number: phoneNumber.trim(),
+        age: age.trim(),
       });
       navigate('/');
     } catch {}
@@ -42,9 +64,9 @@ export function RegisterPage() {
         </p>
       }
     >
-      {error ? (
+      {error || formError ? (
         <div className="mb-6 rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3">
-          <p className="text-sm text-red-300">{error}</p>
+          <p className="text-sm text-red-300">{formError || error}</p>
         </div>
       ) : null}
 
@@ -52,15 +74,38 @@ export function RegisterPage() {
         
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
-            <label className="text-sm font-medium text-white/80">Full name</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white/80">First name</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
+                value={firstName}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  if (formError) setFormError('');
+                }}
+                placeholder="John"
+                autoComplete="given-name"
+                className="glass-input h-14 w-full rounded-2xl pl-12 pr-4 text-white placeholder:text-[var(--text-muted)]"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white/80">Last name</label>
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--text-muted)]" />
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                  if (formError) setFormError('');
+                }}
+                placeholder="Doe"
+                autoComplete="family-name"
                 className="glass-input h-14 w-full rounded-2xl pl-12 pr-4 text-white placeholder:text-[var(--text-muted)]"
                 required
               />
