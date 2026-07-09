@@ -1,0 +1,103 @@
+import { Link } from 'react-router-dom';
+import { Mail, Trash2, Globe } from 'lucide-react';
+import { BrandLogo } from '@/components/layout/BrandLogo';
+
+export function Footer() {
+  const footerSections = [
+    {
+      title: 'Authentication',
+      links: [
+        { name: 'Login', path: '/login' },
+        { name: 'Favorites', path: '/favorites' },
+        { name: 'Watchlist', path: '/watchlist' },
+        { name: 'Rated Film', path: '/rated' },
+      ],
+    },
+    {
+      title: 'Explore',
+      links: [
+        { name: 'Movies', path: '/browse?type=movie' },
+        { name: 'TV Shows', path: '/browse?type=series' },
+        { name: 'Top Rated Movies', path: '/browse?sort=top_rated' },
+        { name: 'Upcoming Movies', path: '/browse?sort=upcoming' },
+        { name: 'Popular TV Shows', path: '/browse?sort=popular&type=series' },
+      ],
+    },
+    {
+      title: 'Search',
+      links: [
+        { name: 'Filters', path: '/' },
+        { name: 'Genres', path: '/' },
+        { name: 'Actors', path: '/' },
+        { name: 'Streaming', path: '/' },
+        { name: 'Vote Count', path: '/' },
+        // { name: 'Vote Count', path: '/search' },
+      ],
+    },
+  ];
+
+  return (
+    <footer className="bg-[var(--bg-base)] px-4 pt-10 pb-8 md:px-6 md:pt-0 md:pb-10 lg:px-16">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-10 overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:mb-14">
+          <img
+            src="/footer_iamge.png"
+            alt="Camcine footer banner"
+            className="block w-full object-cover"
+          />
+        </div>
+
+        <div className="mb-10 flex justify-center md:mb-12">
+          <BrandLogo imgClassName="h-12 md:h-14" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          {footerSections.map((section) => (
+            <div key={section.title}>
+              <h3 className="mb-4 text-base font-bold uppercase tracking-wider text-white md:mb-6 md:text-lg" style={{ fontFamily: 'Sora, sans-serif' }}>
+                {section.title}
+              </h3>
+              <ul className="space-y-3">
+                {section.links.map((link) => (
+                  <li key={link.name}>
+                    <Link to={link.path} className="text-[15px] text-white/50 transition-colors hover:text-white">
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          <div>
+            <h3 className="mb-4 text-base font-bold uppercase tracking-wider text-white md:mb-6 md:text-lg" style={{ fontFamily: 'Sora, sans-serif' }}>
+              Get in Touch
+            </h3>
+            <p className="mb-6 text-[15px] leading-relaxed text-white/50">
+              Stay connected with us to discover more stories about new movies and explore more with us
+            </p>
+            <div className="flex items-center gap-4">
+              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
+                <Globe className="h-5 w-5" />
+              </a>
+              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
+                <Mail className="h-5 w-5" />
+              </a>
+              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
+                <Trash2 className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-6 text-center text-xs text-white/30 md:mt-20 md:flex-row md:pt-8 md:text-left">
+          <p>&copy; 2026. All rights reserved.</p>
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+            <Link to="/privacy" className="transition-colors hover:text-white">Privacy Policy</Link>
+            <Link to="/terms" className="transition-colors hover:text-white">Terms of Service</Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
