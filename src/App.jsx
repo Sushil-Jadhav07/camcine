@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '@/store';
 
 import { Header } from '@/components/layout/Header';
+import { TopStrip } from '@/components/layout/TopStrip';
 import { Footer } from '@/components/layout/Footer';
 import { Player } from '@/components/player/Player';
 import { Toaster } from '@/components/ui/sonner';
@@ -72,8 +73,9 @@ function PublicOnlyRoute({ children }) {
 function AppLayout() {
   return (
     <div className="min-h-screen bg-[var(--bg-base)]">
+      <TopStrip />
       <Header />
-      <div className="pt-16 md:pt-20">
+      <div className="pt-[96px] md:pt-[128px]">
         <main className="pb-8 md:pb-12">
           <Outlet />
         </main>

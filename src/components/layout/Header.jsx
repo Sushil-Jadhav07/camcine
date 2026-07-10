@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, X, Bell, User, ChevronDown, Film, Menu } from 'lucide-react';
+import { Search, X, Bell, User, ChevronDown, Menu } from 'lucide-react';
 import { useAuthStore, useUIStore } from '@/store';
+import { BrandLogo } from './BrandLogo';
 
 export function Header() {
   const location = useLocation();
@@ -70,7 +71,7 @@ export function Header() {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500"
+      className="fixed top-8 md:top-12 left-0 right-0 z-[100] transition-all duration-500"
       style={{ height: '64px' }}
     >
       <div
@@ -86,22 +87,11 @@ export function Header() {
 
       <div className="relative flex items-center justify-between h-full px-4 md:px-6 lg:px-8 gap-3 md:gap-4">
 
-        <Link to="/" className="flex items-center gap-2 shrink-0 group">
-          <div
-            className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-lg transition-all duration-300 group-hover:scale-105"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-              boxShadow: '0 0 16px rgba(232,68,44,0.5)',
-            }}
-          >
-            <Film className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
-          </div>
-          <span
-            className="font-black text-base md:text-2xl text-white"
-            style={{ fontFamily: 'Sora, sans-serif', letterSpacing: '-0.04em' }}
-          >
-            <span style={{ color: 'var(--accent)' }}>Camcine</span>
-          </span>
+        <Link to="/" className="flex items-center shrink-0 group">
+          <BrandLogo
+            className="transition-transform duration-300 group-hover:scale-105"
+            imgClassName="h-9 md:h-12"
+          />
         </Link>
 
         <nav className="hidden lg:flex items-center">

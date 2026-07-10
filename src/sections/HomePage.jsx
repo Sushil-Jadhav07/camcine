@@ -89,7 +89,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="relative -mt-16 md:-mt-20" ref={heroRef}>
+    <div className="relative -mt-[96px] md:-mt-[128px]" ref={heroRef}>
       <section className="relative w-full h-[calc(65vh+4rem)] sm:h-[calc(72vh+4rem)] md:h-[calc(80vh+5rem)] overflow-hidden">
         {heroContent ? (
           <>

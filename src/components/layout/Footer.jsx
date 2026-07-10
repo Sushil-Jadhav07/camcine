@@ -41,7 +41,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-10 overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:mb-14">
           <img
-            src="/footer_iamge.png"
+            src="/footer_imagewhite.png"
             alt="Camcine footer banner"
             className="block w-full object-cover"
           />
@@ -91,7 +91,9 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-6 text-center text-xs text-white/30 md:mt-20 md:flex-row md:pt-8 md:text-left">
-          <p>&copy; 2026. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} All rights reserved. <a href="https://www.camcine.com" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">www.camcine.com</a>.  A unit of Delision Pvt Ltd.
+          </p>
           <div className="flex flex-wrap justify-center gap-6 md:gap-8">
             <Link to="/privacy" className="transition-colors hover:text-white">Privacy Policy</Link>
             <Link to="/terms" className="transition-colors hover:text-white">Terms of Service</Link>

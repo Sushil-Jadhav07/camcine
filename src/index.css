@@ -253,6 +253,17 @@
   .scroll-row::-webkit-scrollbar { display: none; }
   .scroll-row > * { scroll-snap-align: start; flex-shrink: 0; }
 
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 28s linear infinite;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes marquee-scroll {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+
   .btn-accent {
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
     padding: 12px 28px;
