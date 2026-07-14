@@ -259,12 +259,13 @@ export function HomePage() {
         <div className="overflow-hidden border-y border-white/10 bg-white/[0.03]">
           <div className="marquee-track items-center gap-10 whitespace-nowrap px-4 py-3 md:px-6 lg:px-8">
             {[...homeMarqueeItems, ...homeMarqueeItems].map((item, index) => (
-              <span
+              <Link
                 key={`${item}-${index}`}
-                className="inline-flex shrink-0 items-center text-xs font-black uppercase tracking-[0.3em] text-white/75 md:text-sm"
+                to="/live-news"
+                className="inline-flex shrink-0 items-center text-xs font-black uppercase tracking-[0.3em] text-white/75 transition hover:text-[var(--accent)] md:text-sm"
               >
                 {item}
-              </span>
+              </Link>
             ))}
           </div>
         </div>

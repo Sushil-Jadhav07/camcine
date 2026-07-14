@@ -5,7 +5,16 @@ export function useHoverPlay() {
   const videoRef = useRef(null);
 
   const onMouseEnter = () => {
-    videoRef.current?.play();
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = false;
+    const playPromise = video.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => {
+        video.muted = true;
+        video.play().catch(() => {});
+      });
+    }
   };
 
   const onMouseLeave = () => {
@@ -31,7 +40,6 @@ export function NewsReelCard({ news, formatTimeAgo, className = '' }) {
         <video
           ref={videoRef}
           src={news.videoUrl}
-          muted
           loop
           playsInline
           preload="metadata"
