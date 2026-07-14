@@ -6,8 +6,16 @@ import { Star, ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { CAMCINE_MOVIES } from '@/data/camcineContent';
 import { ContentCard } from '@/components/cards/ContentCard';
+import { NewsReelCard } from '@/components/cards/NewsReelCard';
 import { contentService } from '@/services';
 import { getAccessBadgeClass, getAccessLabel } from '@/lib/access';
+
+const formatNewsTimeAgo = (year) => {
+  const diff = new Date().getFullYear() - year;
+  if (diff <= 0) return 'Live now';
+  if (diff === 1) return '1 year ago';
+  return `${diff} years ago`;
+};
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,6 +29,15 @@ const uniqueContent = (items = []) => {
   });
 };
 
+const homeMarqueeItems = [
+  'Check out the latest updates',
+  'Check out the latest news',
+  'Breaking stories on Camcine News',
+  'Latest headlines streaming now',
+  'Stay updated with Camcine News',
+  'Fresh news and top stories',
+];
+
 export function HomePage() {
   const heroRef = useRef(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -30,6 +47,11 @@ export function HomePage() {
   const { data: apiContent = [] } = useQuery({
     queryKey: ['home-content'],
     queryFn: () => contentService.getFeaturedContent(),
+  });
+
+  const { data: newsContent = [] } = useQuery({
+    queryKey: ['news'],
+    queryFn: contentService.getNews,
   });
 
   const heroSlides = uniqueContent(apiContent.length > 0 ? apiContent : CAMCINE_MOVIES);
@@ -233,6 +255,21 @@ export function HomePage() {
         </div>
       )}
 
+      <section className="section-content py-4 md:py-6">
+        <div className="overflow-hidden border-y border-white/10 bg-white/[0.03]">
+          <div className="marquee-track items-center gap-10 whitespace-nowrap px-4 py-3 md:px-6 lg:px-8">
+            {[...homeMarqueeItems, ...homeMarqueeItems].map((item, index) => (
+              <span
+                key={`${item}-${index}`}
+                className="inline-flex shrink-0 items-center text-xs font-black uppercase tracking-[0.3em] text-white/75 md:text-sm"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="section-content py-8 md:py-14 px-4 md:px-6 lg:px-16">
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h2 className="section-title">Latest on Camcine</h2>
@@ -245,6 +282,27 @@ export function HomePage() {
           ))}
         </div>
       </section>
+
+      {newsContent.length > 0 && (
+        <section className="section-content py-8 md:py-14 px-4 md:px-6 lg:px-16">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h2 className="section-title">Camcine News</h2>
+            <Link
+              to="/live-news"
+              className="text-xs md:text-sm font-black uppercase tracking-widest text-white/50 transition hover:text-[var(--accent)]"
+            >
+              View All
+            </Link>
+          </div>
+          <div className="scroll-row no-scrollbar">
+            {newsContent.map((news) => (
+              <div key={news.id} className="w-[calc((100%_-_4*16px)/5)] min-w-[200px] flex-shrink-0">
+                <NewsReelCard news={news} formatTimeAgo={formatNewsTimeAgo} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

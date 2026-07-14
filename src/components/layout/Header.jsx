@@ -48,13 +48,15 @@ export function Header() {
   const primaryLinks = [
     { path: '/', label: 'Home' },
     { path: '/browse?type=movie', label: 'Movies' },
+        { path: '/live-news', label: 'Live News' },
+
     { path: '/browse?type=series', label: 'Series' },
     { path: '/songs', label: 'Songs' },
   ];
 
   const moreLinks = [
     { path: '/browse', label: 'Genres' },
-    { path: '/live-news', label: 'Live News' },
+    { path: '/browse?type=series', label: 'Series' },
     { path: '/pricing', label: 'Pricing' },
   ];
 

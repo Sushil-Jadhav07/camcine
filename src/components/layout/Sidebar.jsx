@@ -22,8 +22,8 @@ export function Sidebar({ isOpen, onClose }) {
     { path: '/', label: 'Home', icon: Home },
     { path: '/browse', label: 'Browse', icon: Compass },
     { path: '/browse?type=movie', label: 'Movies', icon: Film },
-    { path: '/browse?type=series', label: 'TV Series', icon: Clapperboard },
     { path: '/live-news', label: 'Live News', icon: Radio },
+    { path: '/browse?type=series', label: 'TV Series', icon: Clapperboard },
     { path: '/songs', label: 'Songs', icon: Music },
   ];
 
