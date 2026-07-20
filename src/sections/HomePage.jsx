@@ -284,7 +284,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {newsContent.length > 0 && (
+      {/* {newsContent.length > 0 && (
         <section className="section-content py-8 md:py-14 px-4 md:px-6 lg:px-16">
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <h2 className="section-title">Camcine News</h2>
@@ -303,7 +303,7 @@ export function HomePage() {
             ))}
           </div>
         </section>
-      )}
+      )} */}
     </div>
   );
 }

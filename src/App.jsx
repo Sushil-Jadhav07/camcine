@@ -71,11 +71,14 @@ function PublicOnlyRoute({ children }) {
 }
 
 function AppLayout() {
+  const location = useLocation();
+  const contentOffset = location.pathname === '/live-news' ? 'pt-[96px] md:pt-[112px]' : 'pt-[96px] md:pt-[128px]';
+
   return (
     <div className="min-h-screen bg-[var(--bg-base)]">
       <TopStrip />
       <Header />
-      <div className="pt-[96px] md:pt-[128px]">
+      <div className={contentOffset}>
         <main className="pb-8 md:pb-12">
           <Outlet />
         </main>
