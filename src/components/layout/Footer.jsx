@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, Trash2, Globe } from 'lucide-react';
+import { Mail, Instagram, Facebook } from 'lucide-react';
 import { BrandLogo } from '@/components/layout/BrandLogo';
 
 export function Footer() {
@@ -38,7 +38,7 @@ export function Footer() {
 
   return (
     <footer className="bg-[var(--bg-base)] px-4 pt-10 pb-8 md:px-6 md:pt-0 md:pb-10 lg:px-16">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         <div className="mb-10 overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.03] shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:mb-14">
           <img
             src="/footer_imagewhite.png"
@@ -77,14 +77,14 @@ export function Footer() {
               Stay connected with us to discover more stories about new movies and explore more with us
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
-                <Globe className="h-5 w-5" />
+              <a href="https://www.facebook.com/camcine" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
+                <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
+              <a href="mailto:camcineottdev@gmail.com" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
                 <Mail className="h-5 w-5" />
               </a>
-              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
-                <Trash2 className="h-5 w-5" />
+              <a href="https://www.instagram.com/camcine" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] transition-all hover:bg-[var(--accent)]/20">
+                <Instagram className="h-5 w-5" />
               </a>
             </div>
           </div>
