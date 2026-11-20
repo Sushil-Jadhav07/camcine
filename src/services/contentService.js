@@ -1,7 +1,7 @@
 import { apiRequest, buildQuery, unwrapApiData } from './apiClient';
 import { mockNews } from '@/data/mockData';
 
-const fallbackPoster = '/Black Cat.png';
+const fallbackPoster = '/media/posters/black-cat.png';
 
 const secondsToRuntime = (seconds) => {
   if (!seconds) return null;

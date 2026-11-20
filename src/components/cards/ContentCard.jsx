@@ -9,7 +9,7 @@ export function ContentCard({ content, variant = 'default', className = '' }) {
   const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
   const isSeries = content.type === 'series';
   const inWatchlist = isInWatchlist(content.id);
-  const imageSrc = content.poster || content.poster_url || content.thumbnail || content.thumbnail_url || content.backdrop || '/Black Cat.png';
+  const imageSrc = content.poster || content.poster_url || content.thumbnail || content.thumbnail_url || content.backdrop || '/media/posters/black-cat.png';
   const cardSizeClass =
     variant === 'large'
       ? 'rounded-2xl md:rounded-[1.75rem]'

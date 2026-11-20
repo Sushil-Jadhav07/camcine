@@ -1,2 +1,14 @@
 node_modules
 .env
+# local-only env overrides
+.env.local
+
+# Large media - too heavy for git (keep on disk / upload to storage)
+public/media/trailers/
+dist/media/trailers/
+dist/*.MOV
+dist/*.mov
+dist/*.mp4
+
+# logs
+*.log

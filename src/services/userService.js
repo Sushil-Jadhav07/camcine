@@ -7,7 +7,7 @@ const normalizeHistoryItem = (item = {}) => {
   const content = rawContent
     ? normalizeContent(rawContent)
     : item.content_id
-      ? { id: item.content_id, title: item.content_title || 'Viewed content', poster: '/Black Cat.png' }
+      ? { id: item.content_id, title: item.content_title || 'Viewed content', poster: '/media/posters/black-cat.png' }
       : null;
 
   return {

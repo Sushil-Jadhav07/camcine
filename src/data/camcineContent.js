@@ -1,5 +1,6 @@
-// Local Camcine originals. Media files live in frontend/public and are
-// referenced from the site root so Vite can serve them in dev and production.
+// Local Camcine originals. Media files live in frontend/public/media
+// (trailers/ and posters/) and are referenced from the site root so Vite
+// can serve them in dev and production.
 
 export const CAMCINE_MOVIES = [
   {
@@ -8,9 +9,9 @@ export const CAMCINE_MOVIES = [
     description: 'A gripping thriller about a shadowy operative who never misses her mark.',
     type: 'movie',
     status: 'premium',
-    poster: '/Black Cat.png',
-    backdrop: '/Black Cat.png',
-    trailerSrc: '/Black Cat.MOV',
+    poster: '/media/posters/black-cat.png',
+    backdrop: '/media/posters/black-cat.png',
+    trailerSrc: '/media/trailers/black-cat.mov',
     releaseYear: 2026,
     rating: 'A',
     tmdbRating: '8.1',
@@ -28,9 +29,9 @@ export const CAMCINE_MOVIES = [
     description: 'A powerful story of love, loss, and the last letter that changed everything.',
     type: 'movie',
     status: 'premium',
-    poster: '/akhri khat.png',
-    backdrop: '/akhri khat.png',
-    trailerSrc: '/Akhri khat.MOV',
+    poster: '/media/posters/akhri-khat.png',
+    backdrop: '/media/posters/akhri-khat.png',
+    trailerSrc: '/media/trailers/akhri-khat.mov',
     releaseYear: 2026,
     rating: 'U/A',
     tmdbRating: '8.0',
@@ -48,9 +49,9 @@ export const CAMCINE_MOVIES = [
     description: 'A latest English movie trailer built around an unconventional story and a new perspective.',
     type: 'movie',
     status: 'premium',
-    poster: '/different-story.png',
-    backdrop: '/different-story.png',
-    trailerSrc: '/Different-Latest-English-Movie-Trailer-G_Media_Nl6nmZrB-L8_002_720p.mp4',
+    poster: '/media/posters/different.png',
+    backdrop: '/media/posters/different.png',
+    trailerSrc: '/media/trailers/different.mp4',
     releaseYear: 2026,
     rating: 'U/A',
     tmdbRating: '7.9',
@@ -68,9 +69,9 @@ export const CAMCINE_MOVIES = [
     description: 'A romantic drama set around the memories, emotions, and secrets of a rose garden.',
     type: 'movie',
     status: 'premium',
-    poster: '/rose garden.png',
-    backdrop: '/rose garden.png',
-    trailerSrc: '/ROSE GARDEN film 720P.mp4',
+    poster: '/media/posters/rose-garden.png',
+    backdrop: '/media/posters/rose-garden.png',
+    trailerSrc: '/media/trailers/rose-garden.mp4',
     releaseYear: 2026,
     rating: 'U/A',
     tmdbRating: '8.2',
@@ -88,9 +89,9 @@ export const CAMCINE_MOVIES = [
     description: "A Valentine's Day story from Rose Garden, shaped by love, longing, and heartfelt moments.",
     type: 'movie',
     status: 'premium',
-    poster: '/MILIND GUNAJI about ROSE GARDEN.png',
-    backdrop: '/MILIND GUNAJI about ROSE GARDEN.png',
-    trailerSrc: "/ROSE GARDEN ON VALENTINE'S DAY 720P.mp4",
+    poster: '/media/posters/rose-garden-valentines-day.png',
+    backdrop: '/media/posters/rose-garden-valentines-day.png',
+    trailerSrc: '/media/trailers/rose-garden-valentines-day.mp4',
     releaseYear: 2026,
     rating: 'U/A',
     tmdbRating: '8.0',
